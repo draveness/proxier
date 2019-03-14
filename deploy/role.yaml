@@ -1,6 +1,7 @@
-kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
 metadata:
+  creationTimestamp: null
   name: proxier
 rules:
 - apiGroups:
@@ -14,7 +15,7 @@ rules:
   - configmaps
   - secrets
   verbs:
-  - "*"
+  - '*'
 - apiGroups:
   - ""
   resources:
@@ -29,19 +30,25 @@ rules:
   - replicasets
   - statefulsets
   verbs:
-  - "*"
+  - '*'
 - apiGroups:
   - monitoring.coreos.com
   resources:
   - servicemonitors
   verbs:
-  - "get"
-  - "create"
+  - get
+  - create
 - apiGroups:
   - apps
-  resources:
-  - deployments/finalizers
   resourceNames:
   - proxier
+  resources:
+  - deployments/finalizers
   verbs:
-  - "update"
+  - update
+- apiGroups:
+  - draveness.me
+  resources:
+  - '*'
+  verbs:
+  - '*'

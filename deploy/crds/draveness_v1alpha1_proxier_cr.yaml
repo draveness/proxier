@@ -1,0 +1,7 @@
+apiVersion: draveness.me/v1alpha1
+kind: Proxier
+metadata:
+  name: example-proxier
+spec:
+  # Add fields here
+  size: 3
