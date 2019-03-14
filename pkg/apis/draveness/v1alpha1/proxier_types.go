@@ -10,9 +10,19 @@ import (
 // ProxierSpec defines the desired state of Proxier
 // +k8s:openapi-gen=true
 type ProxierSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
+	// +kubebuilder:validation:MinItems=1
+	Servers    []ServerSpec `json:"servers"`
+	ListenPort int32        `json:"listenPort"`
+}
+
+// ServerSpec defines the target server of Proxier
+type ServerSpec struct {
+	Proportion float64 `json:"proportion"`
+
+	TargetPort int32 `json:"targetPort,omitempty"`
+
+	// +kubebuilder:validation:MinItems=1
+	Selector map[string]string `json:"selector,omitempty"`
 }
 
 // ProxierStatus defines the observed state of Proxier
