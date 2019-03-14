@@ -11,15 +11,12 @@ import (
 // +k8s:openapi-gen=true
 type ProxierSpec struct {
 	// +kubebuilder:validation:MinItems=1
-	Servers    []ServerSpec `json:"servers"`
-	ListenPort int32        `json:"listenPort"`
+	Servers []ServerSpec `json:"servers"`
 }
 
 // ServerSpec defines the target server of Proxier
 type ServerSpec struct {
 	Proportion float64 `json:"proportion"`
-
-	TargetPort int32 `json:"targetPort,omitempty"`
 
 	// +kubebuilder:validation:MinItems=1
 	Selector map[string]string `json:"selector,omitempty"`
