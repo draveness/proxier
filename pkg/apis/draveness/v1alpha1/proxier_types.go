@@ -15,6 +15,8 @@ type ProxierSpec struct {
 type ServerSpec struct {
 	Proportion float64 `json:"proportion"`
 
+	TargetPort int32 `json:"port"`
+
 	// +kubebuilder:validation:MinItems=1
 	Selector map[string]string `json:"selector,omitempty"`
 }
