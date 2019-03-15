@@ -225,8 +225,6 @@ func (r *ReconcileProxier) newServersForProxier(instance *dravenessv1alpha1.Prox
 }
 
 func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
-	labels := map[string]string{}
-
 	selector := newPodLabel(cr)
 
 	return &corev1.Service{
