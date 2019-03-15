@@ -274,7 +274,7 @@ func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
 func newConfigMapForProxier(instance *dravenessv1alpha1.Proxier) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      instance.Name + "proxy-configmap",
+			Name:      instance.Name + "-proxy-configmap",
 			Namespace: instance.Namespace,
 		},
 		Data: map[string]string{
@@ -305,7 +305,7 @@ func newNginxForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
 					},
 					VolumeMounts: []corev1.VolumeMount{
 						{
-							Name:      cr.Name + "proxy-configmap",
+							Name:      cr.Name + "-proxy-configmap",
 							MountPath: "/etc/nginx",
 							ReadOnly:  true,
 						},
