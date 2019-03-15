@@ -179,7 +179,7 @@ func (r *ReconcileProxier) newServersForProxier(instance *dravenessv1alpha1.Prox
 	var wg sync.WaitGroup
 	wg.Add(serversCount)
 	for _, server := range instance.Spec.Servers {
-		go func(server *dravenessv1alpha1.ServerSpec) {
+		go func(server dravenessv1alpha1.ServerSpec) {
 			defer wg.Done()
 			service := &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
@@ -215,7 +215,7 @@ func (r *ReconcileProxier) newServersForProxier(instance *dravenessv1alpha1.Prox
 				}
 			}
 
-		}(&server)
+		}(server)
 	}
 	wg.Wait()
 
