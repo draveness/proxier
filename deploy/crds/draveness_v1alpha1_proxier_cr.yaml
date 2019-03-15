@@ -5,13 +5,13 @@ metadata:
 spec:
   servers:
     - name: v1
-      proportion: 0.5
+      proportion: 0.1
       targetPort: 5678
       selector:
         version: v1
         app: test
     - name: v2
-      proportion: 0.5
+      proportion: 0.9
       targetPort: 5678
       selector:
         version: v2

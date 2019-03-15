@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox
+  labels:
+    app: busybox
+spec:
+  containers:
+  - name: utils
+    tty: true
+    stdin: true
+    image: arunvelsriram/utils
+    imagePullPolicy: IfNotPresent
+  restartPolicy: Always
