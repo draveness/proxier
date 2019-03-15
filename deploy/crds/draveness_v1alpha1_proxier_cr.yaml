@@ -3,5 +3,16 @@ kind: Proxier
 metadata:
   name: example-proxier
 spec:
-  # Add fields here
-  size: 3
+  servers:
+    - name: v1
+      proportion: 0.5
+      targetPort: 5678
+      selector:
+        version: v1
+        app: test
+    - name: v2
+      proportion: 0.5
+      targetPort: 5678
+      selector:
+        version: v2
+        app: test
