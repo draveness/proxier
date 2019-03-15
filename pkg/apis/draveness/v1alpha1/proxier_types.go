@@ -17,7 +17,7 @@ type ServerSpec struct {
 
 	Proportion float64 `json:"proportion"`
 
-	TargetPort int32 `json:"port"`
+	TargetPort int32 `json:"targetPort"`
 
 	// +kubebuilder:validation:MinItems=1
 	Selector map[string]string `json:"selector,omitempty"`
