@@ -180,6 +180,7 @@ func (r *ReconcileProxier) newServersForProxier(instance *dravenessv1alpha1.Prox
 	wg.Add(serversCount)
 	for _, server := range instance.Spec.Servers {
 		go func(server *dravenessv1alpha1.ServerSpec) {
+			defer wg.Done()
 			service := &corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      fmt.Sprintf("%s-%s-server", instance.Name, server.Name),
@@ -216,6 +217,7 @@ func (r *ReconcileProxier) newServersForProxier(instance *dravenessv1alpha1.Prox
 
 		}(&server)
 	}
+	wg.Wait()
 
 	select {
 	case err := <-errCh:
