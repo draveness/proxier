@@ -21,17 +21,21 @@ func newNginxConfigWithProxier(instance *dravenessv1alpha1.Proxier) string {
 		})
 	}
 
-	conf := ""
-	conf += "upstream backend {\n"
-	for _, server := range servers {
-		conf += fmt.Sprintf("server %s weight=%d;\n", server.Name, server.Weight)
-	}
+	conf := "events {\n"
+	conf += "    worker_connections 1024;\n"
 	conf += "}\n"
-	conf += `server {
-          		location / {
-          				proxy_pass http://backend;
-          		}
-          }`
+	conf += "http {\n"
+	conf += "    upstream backend {\n"
+	for _, server := range servers {
+		conf += fmt.Sprintf("         server %s weight=%d;\n", server.Name, server.Weight)
+	}
+	conf += "    }\n"
+	conf += "    server {\n"
+	conf += "        location / {\n"
+	conf += "            proxy_pass http://backend;\n"
+	conf += "        }\n"
+	conf += "    }\n"
+	conf += "}\n"
 
 	return conf
 }
