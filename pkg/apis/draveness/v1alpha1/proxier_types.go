@@ -13,6 +13,8 @@ type ProxierSpec struct {
 
 // ServerSpec defines the target server of Proxier
 type ServerSpec struct {
+	Name string `json:"name"`
+
 	Proportion float64 `json:"proportion"`
 
 	TargetPort int32 `json:"port"`

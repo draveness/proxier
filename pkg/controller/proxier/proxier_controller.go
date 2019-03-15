@@ -2,6 +2,8 @@ package proxier
 
 import (
 	"context"
+	"fmt"
+	"sync"
 
 	dravenessv1alpha1 "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
 
@@ -166,10 +168,64 @@ func (r *ReconcileProxier) newPodForProxier(instance *dravenessv1alpha1.Proxier)
 	return nil
 }
 
-func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
-	labels := map[string]string{
-		"app": cr.Name,
+func (r *ReconcileProxier) newServersForProxier(instance *dravenessv1alpha1.Proxier) error {
+	serversCount := len(instance.Spec.Servers)
+	errCh := make(chan error, serversCount)
+	var wg sync.WaitGroup
+	wg.Add(serversCount)
+	for _, server := range instance.Spec.Servers {
+		go func(server *dravenessv1alpha1.ServerSpec) {
+			service := &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      fmt.Sprintf("%s-%s-server", instance.Name, server.Name),
+					Namespace: instance.Namespace,
+				},
+				Spec: corev1.ServiceSpec{
+					Selector: server.Selector,
+					Type:     corev1.ServiceTypeClusterIP,
+					Ports: []corev1.ServicePort{
+						corev1.ServicePort{
+							Name:     "proxy",
+							Port:     server.TargetPort,
+							Protocol: corev1.ProtocolTCP,
+						},
+					},
+				},
+			}
+
+			if err := controllerutil.SetControllerReference(instance, service, r.scheme); err != nil {
+				errCh <- err
+			} else {
+				found := &corev1.Service{}
+				err := r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
+				if err != nil && errors.IsNotFound(err) {
+					err = r.client.Create(context.TODO(), service)
+					if err != nil {
+						errCh <- err
+					}
+
+				} else if err != nil {
+					errCh <- err
+				}
+			}
+
+		}(&server)
 	}
+
+	select {
+	case err := <-errCh:
+		// all errors have been reported before and they're likely to be the same, so we'll only return the first one we hit.
+		if err != nil {
+			return err
+		}
+	default:
+	}
+
+	return nil
+}
+
+func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
+	labels := map[string]string{}
 
 	selector := newPodLabel(cr)
 
@@ -177,7 +233,6 @@ func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: cr.Namespace,
-			Labels:    labels,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: selector,
@@ -199,7 +254,7 @@ func newPodForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
 
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
+			Name:      cr.Name + "-proxy",
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
