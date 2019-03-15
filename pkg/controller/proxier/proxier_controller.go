@@ -99,40 +99,104 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
+	err = r.newServiceForProxier(instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	err = r.newPodForProxier(instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileProxier) newServiceForProxier(instance *dravenessv1alpha1.Proxier) error {
 	// Define a new Pod object
-	pod := newPodForCR(instance)
+	service := newServiceForProxier(instance)
+
+	// Set Proxier instance as the owner and controller
+	if err := controllerutil.SetControllerReference(instance, service, r.scheme); err != nil {
+		return err
+	}
+
+	// Check if this Service already exists
+	found := &corev1.Service{}
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
+	if err != nil && errors.IsNotFound(err) {
+		err = r.client.Create(context.TODO(), service)
+		if err != nil {
+			return err
+		}
+
+		// Service created successfully - don't requeue
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ReconcileProxier) newPodForProxier(instance *dravenessv1alpha1.Proxier) error {
+	// Define a new Pod object
+	pod := newPodForProxier(instance)
 
 	// Set Proxier instance as the owner and controller
 	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
-		return reconcile.Result{}, err
+		return err
 	}
 
 	// Check if this Pod already exists
 	found := &corev1.Pod{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
 		err = r.client.Create(context.TODO(), pod)
 		if err != nil {
-			return reconcile.Result{}, err
+			return err
 		}
 
 		// Pod created successfully - don't requeue
-		return reconcile.Result{}, nil
+		return nil
 	} else if err != nil {
-		return reconcile.Result{}, err
+		return err
 	}
 
-	// Pod already exists - don't requeue
-	reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
-	return reconcile.Result{}, nil
+	return nil
 }
 
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
+func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
 	labels := map[string]string{
 		"app": cr.Name,
 	}
+
+	selector := newPodLabel(cr)
+
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name,
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: selector,
+			Type:     corev1.ServiceTypeClusterIP,
+			Ports: []corev1.ServicePort{
+				corev1.ServicePort{
+					Name:     "proxy",
+					Port:     80,
+					Protocol: corev1.ProtocolTCP,
+				},
+			},
+		},
+	}
+}
+
+// newPodForProxier returns a busybox pod with the same name/namespace as the cr
+func newPodForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
+	labels := newPodLabel(cr)
+
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-pod",
