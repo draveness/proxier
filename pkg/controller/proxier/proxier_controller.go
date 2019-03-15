@@ -106,7 +106,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	err = r.newPodForProxier(instance)
+	err = r.newNginxForProxier(instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -146,18 +146,36 @@ func (r *ReconcileProxier) newServiceForProxier(instance *dravenessv1alpha1.Prox
 	return nil
 }
 
-func (r *ReconcileProxier) newPodForProxier(instance *dravenessv1alpha1.Proxier) error {
+func (r *ReconcileProxier) newNginxForProxier(instance *dravenessv1alpha1.Proxier) error {
 	// Define a new Pod object
-	pod := newPodForProxier(instance)
+	configMap := newConfigMapForProxier(instance)
+	pod := newNginxForProxier(instance)
 
-	// Set Proxier instance as the owner and controller
+	if err := controllerutil.SetControllerReference(instance, configMap, r.scheme); err != nil {
+		return err
+	}
+
 	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
 		return err
 	}
 
+	foundConfigMap := &corev1.ConfigMap{}
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: configMap.Name, Namespace: configMap.Namespace}, foundConfigMap)
+	if err != nil && errors.IsNotFound(err) {
+		err = r.client.Create(context.TODO(), configMap)
+		if err != nil {
+			return err
+		}
+
+		// ConfigMap created successfully - don't requeue
+		return nil
+	} else if err != nil {
+		return err
+	}
+
 	// Check if this Pod already exists
-	found := &corev1.Pod{}
-	err := r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
+	foundPod := &corev1.Pod{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundPod)
 	if err != nil && errors.IsNotFound(err) {
 		err = r.client.Create(context.TODO(), pod)
 		if err != nil {
@@ -253,8 +271,20 @@ func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
 	}
 }
 
-// newPodForProxier returns a busybox pod with the same name/namespace as the cr
-func newPodForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
+func newConfigMapForProxier(instance *dravenessv1alpha1.Proxier) *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instance.Name + "proxy-configmap",
+			Namespace: instance.Namespace,
+		},
+		Data: map[string]string{
+			"nginx.conf": newNginxConfigWithProxier(instance),
+		},
+	}
+}
+
+// newNginxForProxier returns a busybox pod with the same name/namespace as the cr
+func newNginxForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
 	labels := newPodLabel(cr)
 
 	return &corev1.Pod{
@@ -266,9 +296,32 @@ func newPodForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
+					Name:  "nginx",
+					Image: "nginx:1.15.9",
+					Ports: []corev1.ContainerPort{
+						{
+							ContainerPort: 80,
+						},
+					},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      cr.Name + "proxy-configmap",
+							MountPath: "/etc/nginx",
+							ReadOnly:  true,
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: cr.Name + "-proxy-configmap",
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: cr.Name + "-proxy-configmap",
+							},
+						},
+					},
 				},
 			},
 		},
