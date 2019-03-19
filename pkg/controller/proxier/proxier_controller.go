@@ -2,8 +2,6 @@ package proxier
 
 import (
 	"context"
-	"fmt"
-	"sync"
 
 	dravenessv1alpha1 "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
 
@@ -110,20 +108,20 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	err = r.syncService(instance)
+	err = r.syncServers(instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	err = r.syncDeployment(instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
+	// err = r.syncService(instance)
+	// if err != nil {
+	// 	return reconcile.Result{}, err
+	// }
 
-	err = r.newServersForProxier(instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
+	// err = r.syncDeployment(instance)
+	// if err != nil {
+	// 	return reconcile.Result{}, err
+	// }
 
 	return reconcile.Result{}, nil
 }
@@ -210,64 +208,6 @@ func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) e
 		return nil
 	} else if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (r *ReconcileProxier) newServersForProxier(instance *dravenessv1alpha1.Proxier) error {
-	serversCount := len(instance.Spec.Servers)
-	errCh := make(chan error, serversCount)
-	var wg sync.WaitGroup
-	wg.Add(serversCount)
-	for _, server := range instance.Spec.Servers {
-		go func(server dravenessv1alpha1.ServerSpec) {
-			defer wg.Done()
-			service := &corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      fmt.Sprintf("%s-%s-server", instance.Name, server.Name),
-					Namespace: instance.Namespace,
-				},
-				Spec: corev1.ServiceSpec{
-					Selector: server.Selector,
-					Type:     corev1.ServiceTypeClusterIP,
-					Ports: []corev1.ServicePort{
-						corev1.ServicePort{
-							Name:     "proxy",
-							Port:     server.TargetPort,
-							Protocol: corev1.ProtocolTCP,
-						},
-					},
-				},
-			}
-
-			if err := controllerutil.SetControllerReference(instance, service, r.scheme); err != nil {
-				errCh <- err
-			} else {
-				found := &corev1.Service{}
-				err := r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
-				if err != nil && errors.IsNotFound(err) {
-					err = r.client.Create(context.TODO(), service)
-					if err != nil {
-						errCh <- err
-					}
-
-				} else if err != nil {
-					errCh <- err
-				}
-			}
-
-		}(server)
-	}
-	wg.Wait()
-
-	select {
-	case err := <-errCh:
-		// all errors have been reported before and they're likely to be the same, so we'll only return the first one we hit.
-		if err != nil {
-			return err
-		}
-	default:
 	}
 
 	return nil
