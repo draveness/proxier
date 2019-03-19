@@ -2,24 +2,65 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+// Protocol defines network protocols supported for things like container ports.
+type Protocol string
+
+const (
+	// ProtocolTCP is the TCP protocol.
+	ProtocolTCP Protocol = "TCP"
+	// ProtocolUDP is the UDP protocol.
+	ProtocolUDP Protocol = "UDP"
+)
+
+type BackendPort struct {
+	Name string `json:"name,omitempty"`
+}
+
+// ProxierPort contains information on proxier's port.
+type ProxierPort struct {
+	// The name of this port within the proxier. This must be a DNS_LABEL.
+	// All ports within a ServiceSpec must have unique names. This maps to
+	// the 'Name' field in EndpointPort objects.
+	// Optional if only one ProxierPort is defined on this service.
+	// +required
+	Name string `json:"name,omitempty"`
+
+	// The IP protocol for this port. Supports "TCP", "UDP".
+	// Default is TCP.
+	// +optional
+	Protocol Protocol `json:"protocol,omitempty"`
+
+	// The port that will be exposed by this proxier
+	Port int32 `json:"port"`
+
+	// +optional
+	TargetPort intstr.IntOrString `json:"targetPort,omitempty"`
+}
 
 // ProxierSpec defines the desired state of Proxier
 // +k8s:openapi-gen=true
 type ProxierSpec struct {
 	// +kubebuilder:validation:MinItems=1
-	Servers []ServerSpec `json:"servers"`
+	Backends []BackendSpec `json:"backends"`
+
+	Selector map[string]string `json:"selector,omitempty"`
+
+	Ports []ProxierPort
 }
 
-// ServerSpec defines the target server of Proxier
-type ServerSpec struct {
+// BackendSpec defines the target backend of Proxier
+type BackendSpec struct {
+	// +kubebuilder:validation:MinLength=1
 	Name string `json:"name"`
 
-	Proportion float64 `json:"proportion"`
+	// +kubebuilder:validation:Minimum=1
+	Weight int32 `json:"weight"`
 
-	TargetPort int32 `json:"targetPort"`
+	TargetPort intstr.IntOrString `json:"targetPort,omitempty"`
 
-	// +kubebuilder:validation:MinItems=1
 	Selector map[string]string `json:"selector,omitempty"`
 }
 

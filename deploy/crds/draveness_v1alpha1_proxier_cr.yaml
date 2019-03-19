@@ -4,18 +4,19 @@ metadata:
   name: example-proxier
 spec:
   protocol: TCP
-  port: 80
-  targetPort: 1234
-  servers:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 5678
+  selector:
+    app: test
+  backends:
     - name: v1
       weight: 1
-      targetPort: 5678
       selector:
         version: v1
-        app: test
     - name: v2
       weight: 9
-      targetPort: 5678
       selector:
         version: v2
-        app: test
