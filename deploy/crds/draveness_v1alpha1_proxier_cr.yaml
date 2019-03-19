@@ -3,15 +3,18 @@ kind: Proxier
 metadata:
   name: example-proxier
 spec:
+  protocol: TCP
+  port: 80
+  targetPort: 1234
   servers:
     - name: v1
-      proportion: 0.1
+      weight: 1
       targetPort: 5678
       selector:
         version: v1
         app: test
     - name: v2
-      proportion: 0.9
+      weight: 9
       targetPort: 5678
       selector:
         version: v2
