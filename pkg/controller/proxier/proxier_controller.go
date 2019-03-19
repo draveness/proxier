@@ -110,12 +110,12 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	err = r.newServiceForProxier(instance)
+	err = r.syncService(instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	err = r.newNginxForProxier(instance)
+	err = r.syncDeployment(instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -128,7 +128,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileProxier) newServiceForProxier(instance *dravenessv1alpha1.Proxier) error {
+func (r *ReconcileProxier) syncService(instance *dravenessv1alpha1.Proxier) error {
 	// Define a new Pod object
 	service := newServiceForProxier(instance)
 
@@ -155,16 +155,19 @@ func (r *ReconcileProxier) newServiceForProxier(instance *dravenessv1alpha1.Prox
 	return nil
 }
 
-func (r *ReconcileProxier) newNginxForProxier(instance *dravenessv1alpha1.Proxier) error {
-	// Define a new Pod object
-	configMap := newConfigMapForProxier(instance)
-	pod := newNginxForProxier(instance)
-
-	if err := controllerutil.SetControllerReference(instance, configMap, r.scheme); err != nil {
-		return err
+func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) error {
+	// Sync ConfigMap for deployment
+	configMap := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instance.Name + "-proxy-configmap",
+			Namespace: instance.Namespace,
+		},
+		Data: map[string]string{
+			"nginx.conf": newNginxConfigWithProxier(instance),
+		},
 	}
 
-	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(instance, configMap, r.scheme); err != nil {
 		return err
 	}
 
@@ -179,6 +182,18 @@ func (r *ReconcileProxier) newNginxForProxier(instance *dravenessv1alpha1.Proxie
 		// ConfigMap created successfully - don't requeue
 		return nil
 	} else if err != nil {
+		return err
+	}
+
+	err = r.client.Update(context.TODO(), configMap)
+	if err != nil {
+		return err
+	}
+
+	// Sync deployment backed by nginx
+	pod := newDeployment(instance)
+
+	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
 		return err
 	}
 
@@ -280,20 +295,8 @@ func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
 	}
 }
 
-func newConfigMapForProxier(instance *dravenessv1alpha1.Proxier) *corev1.ConfigMap {
-	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      instance.Name + "-proxy-configmap",
-			Namespace: instance.Namespace,
-		},
-		Data: map[string]string{
-			"nginx.conf": newNginxConfigWithProxier(instance),
-		},
-	}
-}
-
-// newNginxForProxier returns a busybox pod with the same name/namespace as the cr
-func newNginxForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
+// newDeployment returns a busybox pod with the same name/namespace as the cr
+func newDeployment(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
 	labels := newPodLabel(cr)
 
 	return &corev1.Pod{
