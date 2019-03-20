@@ -15,10 +15,6 @@ const (
 	ProtocolUDP Protocol = "UDP"
 )
 
-type BackendPort struct {
-	Name string `json:"name,omitempty"`
-}
-
 // ProxierPort contains information on proxier's port.
 type ProxierPort struct {
 	// The name of this port within the proxier. This must be a DNS_LABEL.
@@ -48,7 +44,13 @@ type ProxierSpec struct {
 
 	Selector map[string]string `json:"selector,omitempty"`
 
-	Ports []ProxierPort
+	Ports []ProxierPort `json:"ports"`
+}
+
+// BackendPort contains information on backend's port.
+type BackendPort struct {
+	Name       string `json:"name,omitempty"`
+	TargetPort int32  `json:"targetPort,omitempty"`
 }
 
 // BackendSpec defines the target backend of Proxier
@@ -59,7 +61,7 @@ type BackendSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	Weight int32 `json:"weight"`
 
-	TargetPort intstr.IntOrString `json:"targetPort,omitempty"`
+	Ports []BackendPort `json:"ports"`
 
 	Selector map[string]string `json:"selector,omitempty"`
 }

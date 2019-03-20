@@ -16,6 +16,8 @@ spec:
       weight: 1
       selector:
         version: v1
+      ports:
+        - name: http
     - name: v2
       weight: 9
       selector:

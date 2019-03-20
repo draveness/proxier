@@ -113,12 +113,12 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	// err = r.syncService(instance)
+	// err = r.syncDeployment(instance)
 	// if err != nil {
 	// 	return reconcile.Result{}, err
 	// }
 
-	// err = r.syncDeployment(instance)
+	// err = r.syncService(instance)
 	// if err != nil {
 	// 	return reconcile.Result{}, err
 	// }
@@ -145,66 +145,6 @@ func (r *ReconcileProxier) syncService(instance *dravenessv1alpha1.Proxier) erro
 		}
 
 		// Service created successfully - don't requeue
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) error {
-	// Sync ConfigMap for deployment
-	configMap := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      instance.Name + "-proxy-configmap",
-			Namespace: instance.Namespace,
-		},
-		Data: map[string]string{
-			"nginx.conf": newNginxConfigWithProxier(instance),
-		},
-	}
-
-	if err := controllerutil.SetControllerReference(instance, configMap, r.scheme); err != nil {
-		return err
-	}
-
-	foundConfigMap := &corev1.ConfigMap{}
-	err := r.client.Get(context.TODO(), types.NamespacedName{Name: configMap.Name, Namespace: configMap.Namespace}, foundConfigMap)
-	if err != nil && errors.IsNotFound(err) {
-		err = r.client.Create(context.TODO(), configMap)
-		if err != nil {
-			return err
-		}
-
-		// ConfigMap created successfully - don't requeue
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	err = r.client.Update(context.TODO(), configMap)
-	if err != nil {
-		return err
-	}
-
-	// Sync deployment backed by nginx
-	pod := newDeployment(instance)
-
-	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
-		return err
-	}
-
-	// Check if this Pod already exists
-	foundPod := &corev1.Pod{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundPod)
-	if err != nil && errors.IsNotFound(err) {
-		err = r.client.Create(context.TODO(), pod)
-		if err != nil {
-			return err
-		}
-
-		// Pod created successfully - don't requeue
 		return nil
 	} else if err != nil {
 		return err
