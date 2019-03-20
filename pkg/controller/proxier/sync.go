@@ -10,7 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -36,15 +35,6 @@ func (r *ReconcileProxier) syncServers(instance *dravenessv1alpha1.Proxier) erro
 			backendSelector[key] = value
 		}
 
-		mergedPorts := proxierPorts
-		for i, proxierPort := range proxierPorts {
-			for _, backendPort := range backend.Ports {
-				if backendPort.Name == proxierPort.Name {
-					mergedPorts[i].TargetPort = intstr.FromInt(int(backendPort.TargetPort))
-				}
-			}
-		}
-
 		service := corev1.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-backend", instance.Name, backend.Name),
@@ -53,7 +43,7 @@ func (r *ReconcileProxier) syncServers(instance *dravenessv1alpha1.Proxier) erro
 			Spec: corev1.ServiceSpec{
 				Selector: backendSelector,
 				Type:     corev1.ServiceTypeClusterIP,
-				Ports:    mergedPorts,
+				Ports:    proxierPorts,
 			},
 		}
 

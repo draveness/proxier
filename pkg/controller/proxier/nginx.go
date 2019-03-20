@@ -10,6 +10,12 @@ type Server struct {
 	Weight int64
 }
 
+type Upstream struct {
+}
+
+type Backend struct {
+}
+
 func newNginxConfigWithProxier(instance *dravenessv1alpha1.Proxier) string {
 	// servers := []Server{}
 	// for _, backend := range instance.Spec.Backends {

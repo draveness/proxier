@@ -47,12 +47,6 @@ type ProxierSpec struct {
 	Ports []ProxierPort `json:"ports"`
 }
 
-// BackendPort contains information on backend's port.
-type BackendPort struct {
-	Name       string `json:"name,omitempty"`
-	TargetPort int32  `json:"targetPort,omitempty"`
-}
-
 // BackendSpec defines the target backend of Proxier
 type BackendSpec struct {
 	// +kubebuilder:validation:MinLength=1
@@ -60,8 +54,6 @@ type BackendSpec struct {
 
 	// +kubebuilder:validation:Minimum=1
 	Weight int32 `json:"weight"`
-
-	Ports []BackendPort `json:"ports"`
 
 	Selector map[string]string `json:"selector,omitempty"`
 }
