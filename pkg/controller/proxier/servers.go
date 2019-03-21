@@ -25,6 +25,7 @@ func (r *ReconcileProxier) syncServers(instance *dravenessv1alpha1.Proxier) erro
 		})
 	}
 
+	// TODO: delete useless servers
 	services := []corev1.Service{}
 	for _, backend := range instance.Spec.Backends {
 		backendSelector := map[string]string{}
