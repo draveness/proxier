@@ -113,10 +113,10 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	// err = r.syncDeployment(instance)
-	// if err != nil {
-	// 	return reconcile.Result{}, err
-	// }
+	err = r.syncDeployment(instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
 
 	// err = r.syncService(instance)
 	// if err != nil {
@@ -169,51 +169,6 @@ func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
 					Name:     "proxy",
 					Port:     80,
 					Protocol: corev1.ProtocolTCP,
-				},
-			},
-		},
-	}
-}
-
-// newDeployment returns a busybox pod with the same name/namespace as the cr
-func newDeployment(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
-	labels := newPodLabel(cr)
-
-	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-proxy",
-			Namespace: cr.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  "nginx",
-					Image: "nginx:1.15.9",
-					Ports: []corev1.ContainerPort{
-						{
-							ContainerPort: 80,
-						},
-					},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      cr.Name + "-proxy-configmap",
-							MountPath: "/etc/nginx",
-							ReadOnly:  true,
-						},
-					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: cr.Name + "-proxy-configmap",
-					VolumeSource: corev1.VolumeSource{
-						ConfigMap: &corev1.ConfigMapVolumeSource{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: cr.Name + "-proxy-configmap",
-							},
-						},
-					},
 				},
 			},
 		},
