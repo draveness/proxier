@@ -76,9 +76,7 @@ func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) e
 	}
 
 	foundDeployment.Spec.Template = deployment.Spec.Template
-	foundDeployment.Spec.Selector = deployment.Spec.Selector
-	foundDeployment.Spec.Replicas = deployment.Spec.Replicas
-	foundDeployment.Spec.Strategy = deployment.Spec.Strategy
+
 	err = r.client.Update(context.TODO(), foundDeployment)
 	if err != nil {
 		return err
