@@ -118,10 +118,10 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	// err = r.syncService(instance)
-	// if err != nil {
-	// 	return reconcile.Result{}, err
-	// }
+	err = r.syncService(instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
 
 	return reconcile.Result{}, nil
 }
@@ -150,27 +150,38 @@ func (r *ReconcileProxier) syncService(instance *dravenessv1alpha1.Proxier) erro
 		return err
 	}
 
+	found.Spec.Ports = service.Spec.Ports
+	found.Spec.Selector = service.Spec.Selector
+
+	err = r.client.Update(context.TODO(), found)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func newServiceForProxier(cr *dravenessv1alpha1.Proxier) *corev1.Service {
-	selector := newPodLabel(cr)
+func newServiceForProxier(instance *dravenessv1alpha1.Proxier) *corev1.Service {
+	selector := newPodLabel(instance)
+
+	proxierPorts := []corev1.ServicePort{}
+	for _, port := range instance.Spec.Ports {
+		proxierPorts = append(proxierPorts, corev1.ServicePort{
+			Name:     port.Name,
+			Protocol: corev1.Protocol(port.Protocol),
+			Port:     port.Port,
+		})
+	}
 
 	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name,
-			Namespace: cr.Namespace,
+			Name:      instance.Name,
+			Namespace: instance.Namespace,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: selector,
 			Type:     corev1.ServiceTypeClusterIP,
-			Ports: []corev1.ServicePort{
-				corev1.ServicePort{
-					Name:     "proxy",
-					Port:     80,
-					Protocol: corev1.ProtocolTCP,
-				},
-			},
+			Ports:    proxierPorts,
 		},
 	}
 }

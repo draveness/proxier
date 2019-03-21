@@ -12,7 +12,7 @@ spec:
     app: test
   backends:
     - name: v1
-      weight: 1
+      weight: 90
       selector:
         version: v1
     - name: v2

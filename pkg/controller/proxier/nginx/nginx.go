@@ -8,11 +8,10 @@ import (
 )
 
 type server struct {
-	name       string
-	protocol   string
-	port       int32
-	upstream   string
-	targetPort int32
+	name     string
+	protocol string
+	port     int32
+	upstream string
 }
 
 func (s server) conf() string {
@@ -29,15 +28,15 @@ server {
 }
 
 type upstream struct {
-	name       string
-	backends   []backend
-	targetPort int32
+	name     string
+	backends []backend
+	port     int32
 }
 
 func (up upstream) conf() string {
 	backendStrs := ""
 	for _, backend := range up.backends {
-		backendStrs += fmt.Sprintf("    server %s:%d weight=%d;\n", backend.name, up.targetPort, backend.weight)
+		backendStrs += fmt.Sprintf("    server %s:%d weight=%d;\n", backend.name, up.port, backend.weight)
 	}
 
 	return fmt.Sprintf(`
@@ -56,11 +55,10 @@ func NewConfig(instance *dravenessv1alpha1.Proxier) string {
 	servers := []server{}
 	for _, port := range instance.Spec.Ports {
 		server := server{
-			name:       port.Name,
-			protocol:   strings.ToLower(string(port.Protocol)),
-			port:       port.Port,
-			upstream:   fmt.Sprintf("upstream_%s", port.Name),
-			targetPort: int32(port.TargetPort.IntValue()),
+			name:     port.Name,
+			protocol: strings.ToLower(string(port.Protocol)),
+			port:     port.Port,
+			upstream: fmt.Sprintf("upstream_%s", port.Name),
 		}
 		servers = append(servers, server)
 	}
@@ -77,9 +75,9 @@ func NewConfig(instance *dravenessv1alpha1.Proxier) string {
 	upstreams := []upstream{}
 	for _, server := range servers {
 		upstreams = append(upstreams, upstream{
-			name:       server.upstream,
-			targetPort: server.targetPort,
-			backends:   backends,
+			name:     server.upstream,
+			port:     server.port,
+			backends: backends,
 		})
 	}
 

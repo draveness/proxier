@@ -15,8 +15,6 @@ import (
 func (r *ReconcileProxier) syncServers(instance *dravenessv1alpha1.Proxier) error {
 	backendsCount := len(instance.Spec.Backends)
 
-	proxierSelector := instance.Spec.Selector
-
 	proxierPorts := []corev1.ServicePort{}
 	for _, port := range instance.Spec.Ports {
 		proxierPorts = append(proxierPorts, corev1.ServicePort{
@@ -29,7 +27,10 @@ func (r *ReconcileProxier) syncServers(instance *dravenessv1alpha1.Proxier) erro
 
 	services := []corev1.Service{}
 	for _, backend := range instance.Spec.Backends {
-		backendSelector := proxierSelector
+		backendSelector := map[string]string{}
+		for key, value := range instance.Spec.Selector {
+			backendSelector[key] = value
+		}
 		for key, value := range backend.Selector {
 			backendSelector[key] = value
 		}

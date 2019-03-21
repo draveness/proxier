@@ -5,6 +5,7 @@ import (
 
 	dravenessv1alpha1 "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
 	"github.com/draveness/proxier/pkg/controller/proxier/nginx"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,24 +50,37 @@ func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) e
 		return err
 	}
 
-	pod := newDeployment(instance)
+	deployment := newDeployment(instance)
 
-	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
+	annotations := map[string]string{}
+	annotations["draveness.me/proxier-config-hash"] = computeHash(newConfigMap)
+	deployment.Spec.Template.ObjectMeta.Annotations = annotations
+
+	if err := controllerutil.SetControllerReference(instance, deployment, r.scheme); err != nil {
 		return err
 	}
 
-	// Check if this Pod already exists
-	foundPod := &corev1.Pod{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, foundPod)
+	// Check if this Deployment already exists
+	foundDeployment := &appsv1.Deployment{}
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: deployment.Name, Namespace: deployment.Namespace}, foundDeployment)
 	if err != nil && errors.IsNotFound(err) {
-		err = r.client.Create(context.TODO(), pod)
+		err = r.client.Create(context.TODO(), deployment)
 		if err != nil {
 			return err
 		}
 
-		// Pod created successfully - don't requeue
+		// Deployment created successfully - don't requeue
 		return nil
 	} else if err != nil {
+		return err
+	}
+
+	foundDeployment.Spec.Template = deployment.Spec.Template
+	foundDeployment.Spec.Selector = deployment.Spec.Selector
+	foundDeployment.Spec.Replicas = deployment.Spec.Replicas
+	foundDeployment.Spec.Strategy = deployment.Spec.Strategy
+	err = r.client.Update(context.TODO(), foundDeployment)
+	if err != nil {
 		return err
 	}
 
@@ -74,41 +88,56 @@ func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) e
 }
 
 // newDeployment returns a busybox pod with the same name/namespace as the cr
-func newDeployment(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
+func newDeployment(cr *dravenessv1alpha1.Proxier) *appsv1.Deployment {
 	labels := newPodLabel(cr)
 
-	return &corev1.Pod{
+	replicas := int32(1)
+
+	deployment := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-proxy",
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  "nginx",
-					Image: "nginx:1.15.9",
-					Ports: []corev1.ContainerPort{
-						{
-							ContainerPort: 80,
-						},
-					},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      cr.Name + "-proxy-configmap",
-							MountPath: "/etc/nginx",
-							ReadOnly:  true,
-						},
-					},
-				},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
 			},
-			Volumes: []corev1.Volume{
-				{
-					Name: cr.Name + "-proxy-configmap",
-					VolumeSource: corev1.VolumeSource{
-						ConfigMap: &corev1.ConfigMapVolumeSource{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: cr.Name + "-proxy-configmap",
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      cr.Name + "-proxy",
+					Namespace: cr.Namespace,
+					Labels:    labels,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "nginx",
+							Image: "nginx:1.15.9",
+							Ports: []corev1.ContainerPort{
+								{
+									ContainerPort: 80,
+								},
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      cr.Name + "-proxy-configmap",
+									MountPath: "/etc/nginx",
+									ReadOnly:  true,
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: cr.Name + "-proxy-configmap",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: cr.Name + "-proxy-configmap",
+									},
+								},
 							},
 						},
 					},
@@ -116,4 +145,6 @@ func newDeployment(cr *dravenessv1alpha1.Proxier) *corev1.Pod {
 			},
 		},
 	}
+
+	return &deployment
 }
