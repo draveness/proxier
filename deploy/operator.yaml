@@ -6,11 +6,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      name: proxier
+      name: proxier-operator
   template:
     metadata:
       labels:
-        name: proxier
+        name: proxier-operator
     spec:
       serviceAccountName: proxier
       containers:

@@ -7,7 +7,6 @@ import (
 	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
 
 	"github.com/pkg/errors"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -18,7 +17,7 @@ func (f *Framework) CreateProxierAndWaitUntilReady(ns string, p *maegusv1.Proxie
 		return nil, fmt.Errorf("creating roxier instances failed (%v): %v", p.Name, err)
 	}
 
-	if err := f.WaitForProxierReady(result, 5*time.Minute); err != nil {
+	if err := f.WaitForProxierReady(result, 15*time.Second); err != nil {
 		return nil, fmt.Errorf("waiting for Proxier instances timed out (%v): %v", p.Name, err)
 	}
 
@@ -29,7 +28,7 @@ func (f *Framework) WaitForProxierReady(p *maegusv1.Proxier, timeout time.Durati
 	var pollErr error
 
 	err := wait.Poll(2*time.Second, timeout, func() (bool, error) {
-		_, pollErr = f.MaegusClientV1.Proxiers(v1.NamespaceAll).Get(p.Name, metav1.GetOptions{})
+		_, pollErr = f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
 
 		fmt.Println(pollErr)
 		if pollErr != nil {

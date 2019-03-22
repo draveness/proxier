@@ -65,7 +65,7 @@ func TestAllNS(t *testing.T) {
 
 	// Check if Proxier Operator ever restarted.
 	opts := metav1.ListOptions{LabelSelector: fields.SelectorFromSet(fields.Set(map[string]string{
-		"apps.kubernetes.io/name": "proxier-operator",
+		"name": "proxier-operator",
 	})).String()}
 
 	pl, err := framework.KubeClient.CoreV1().Pods(ns).List(opts)
