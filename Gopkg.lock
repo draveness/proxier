@@ -42,6 +42,14 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
+  branch = "master"
+  digest = "1:fa244f3ea5f305fd2e86e35958409d94f5bfe55fe4885566058b3d4d32563a79"
+  name = "github.com/ant31/crd-validation"
+  packages = ["pkg"]
+  pruneopts = "NT"
+  revision = "38f6a293f140402953f884b015014e0cd519bbb3"
+
+[[projects]]
   digest = "1:680b63a131506e668818d630d3ca36123ff290afa0afc9f4be21940adca3f27d"
   name = "github.com/appscode/jsonpatch"
   packages = ["."]
@@ -65,6 +73,7 @@
     "pkg/apis/monitoring/v1",
     "pkg/client/versioned/scheme",
     "pkg/client/versioned/typed/monitoring/v1",
+    "pkg/k8sutil",
   ]
   pruneopts = "NT"
   revision = "72ec4b9b16ef11700724dc71fec77112536eed40"
@@ -96,6 +105,14 @@
   pruneopts = "NT"
   revision = "85d198d05a92d31823b852b4a5928114912e8949"
   version = "v2.9.0"
+
+[[projects]]
+  digest = "1:820227d03dc661d34f837f3704626d2837dbfbf9f0ec8fdf1f58e683dc5f56fc"
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "72bf35d0ff611848c1dc9df0f976c81192392fa5"
+  version = "v4.1.0"
 
 [[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
@@ -267,6 +284,14 @@
   revision = "3befbb6ad0cc97d4c25d851e9528915809e1a22f"
 
 [[projects]]
+  digest = "1:c7d9de42b661ba85788f5f631cbac165795a2ff7dc1c59a4241d6228b129c3e4"
+  name = "github.com/hashicorp/go-version"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "d40cf49b3a77bba84a7afdbd7f1dc295d114efb1"
+  version = "v1.1.0"
+
+[[projects]]
   digest = "1:52094d0f8bdf831d1a2401e9b6fee5795fdc0b2a2d1f8bb1980834c289e79129"
   name = "github.com/hashicorp/golang-lru"
   packages = [
@@ -387,7 +412,6 @@
     "pkg/scaffold/helm",
     "pkg/scaffold/input",
     "pkg/test",
-    "pkg/test/e2eutil",
     "version",
   ]
   pruneopts = "NT"
@@ -598,6 +622,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:dddcecff308c7862d83399d61f6c1f64ed6d734ff56c7e3f7435811b9f5bc014"
+  name = "golang.org/x/sync"
+  packages = ["errgroup"]
+  pruneopts = "NT"
+  revision = "e225da77a7e68af35c70ccbf71af2b83e6acac3c"
+
+[[projects]]
+  branch = "master"
   digest = "1:a33a417cd198f3bb1b38a13cd408d78371c7902b60178f089f140f1e2a5ec6be"
   name = "golang.org/x/sys"
   packages = [
@@ -805,6 +837,7 @@
   packages = [
     "discovery",
     "discovery/cached",
+    "discovery/fake",
     "dynamic",
     "kubernetes",
     "kubernetes/scheme",
@@ -849,6 +882,7 @@
     "rest",
     "rest/watch",
     "restmapper",
+    "testing",
     "third_party/forked/golang/template",
     "tools/auth",
     "tools/cache",
@@ -1044,25 +1078,44 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/coreos/prometheus-operator/pkg/k8sutil",
     "github.com/go-openapi/spec",
     "github.com/operator-framework/operator-sdk/pkg/k8sutil",
     "github.com/operator-framework/operator-sdk/pkg/leader",
     "github.com/operator-framework/operator-sdk/pkg/log/zap",
     "github.com/operator-framework/operator-sdk/pkg/metrics",
     "github.com/operator-framework/operator-sdk/pkg/test",
-    "github.com/operator-framework/operator-sdk/pkg/test/e2eutil",
     "github.com/operator-framework/operator-sdk/version",
+    "github.com/pkg/errors",
     "github.com/spf13/pflag",
+    "golang.org/x/sync/errgroup",
     "k8s.io/api/apps/v1",
+    "k8s.io/api/apps/v1beta2",
     "k8s.io/api/core/v1",
+    "k8s.io/api/rbac/v1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/fields",
+    "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/rand",
+    "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/util/wait",
+    "k8s.io/apimachinery/pkg/util/yaml",
+    "k8s.io/apimachinery/pkg/watch",
+    "k8s.io/client-go/discovery",
+    "k8s.io/client-go/discovery/fake",
+    "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
+    "k8s.io/client-go/rest",
+    "k8s.io/client-go/testing",
+    "k8s.io/client-go/tools/cache",
+    "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/util/flowcontrol",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/conversion-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",

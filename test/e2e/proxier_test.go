@@ -4,23 +4,22 @@ import (
 	"testing"
 
 	operator "github.com/draveness/proxier/pkg/apis/maegus/v1"
-	"github.com/draveness/proxier/pkg/test/framework"
 
-	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func testCreateBasicProxier(t *testing.T) error {
+func testCreateBasicProxier(t *testing.T) {
 	t.Parallel()
 
 	ctx := framework.NewTestCtx(t)
-	defer ctx.Cleanup()
+	defer ctx.Cleanup(t)
 	ns := ctx.CreateNamespace(t, framework.KubeClient)
+	ctx.SetupProxierRBAC(t, ns, framework.KubeClient)
 
 	exampleProxier := &operator.Proxier{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "example",
-			Namespace: namespace,
+			Name:      "test",
+			Namespace: ns,
 		},
 		Spec: operator.ProxierSpec{
 			Selector: map[string]string{
@@ -53,14 +52,7 @@ func testCreateBasicProxier(t *testing.T) error {
 		},
 	}
 
-	err = f.Client.Create(goctx.TODO(), exampleProxier, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
-	if err != nil {
-		return err
+	if _, err := framework.CreateProxierAndWaitUntilReady(ns, exampleProxier); err != nil {
+		t.Fatal(err)
 	}
-
-	err = e2eutil.WaitForDeployment(t, f.KubeClient, namespace, "example-proxy", 1, retryInterval, timeout)
-	if err != nil {
-		return err
-	}
-
 }

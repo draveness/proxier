@@ -1,14 +1,48 @@
 package e2e
 
 import (
+	"flag"
+	"log"
+	"os"
 	"testing"
 
-	f "github.com/operator-framework/operator-sdk/pkg/test"
+	operatorFramework "github.com/draveness/proxier/test/framework"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/fields"
 )
 
+var (
+	framework *operatorFramework.Framework
+	opImage   *string
+)
+
 func TestMain(m *testing.M) {
-	f.MainEntry(m)
+	kubeconfig := flag.String(
+		"kubeconfig",
+		"",
+		"kube config path, e.g. $HOME/.kube/config",
+	)
+	opImage = flag.String(
+		"operator-image",
+		"",
+		"operator image, e.g. quay.io//prometheus-operator",
+	)
+	flag.Parse()
+
+	var (
+		err      error
+		exitCode int
+	)
+
+	if framework, err = operatorFramework.New(*kubeconfig, *opImage); err != nil {
+		log.Printf("failed to setup framework: %v\n", err)
+		os.Exit(1)
+	}
+
+	exitCode = m.Run()
+
+	os.Exit(exitCode)
 }
 
 func TestAllNS(t *testing.T) {
@@ -17,7 +51,7 @@ func TestAllNS(t *testing.T) {
 
 	ns := ctx.CreateNamespace(t, framework.KubeClient)
 
-	err := framework.CreatePrometheusOperator(ns, *opImage, nil)
+	err := framework.CreateProxierOperator(ns, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +94,7 @@ func TestAllNS(t *testing.T) {
 
 func testAllNS(t *testing.T) {
 	testFuncs := map[string]func(t *testing.T){
-		"CreateBasicProxier": TestCreateBasicProxier,
+		"CreateBasicProxier": testCreateBasicProxier,
 	}
 
 	for name, f := range testFuncs {
