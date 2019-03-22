@@ -22,6 +22,52 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            backends:
+              items:
+                properties:
+                  name:
+                    minLength: 1
+                    type: string
+                  selector:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  weight:
+                    format: int32
+                    minimum: 1
+                    type: integer
+                required:
+                - name
+                - weight
+                type: object
+              minItems: 1
+              type: array
+            ports:
+              items:
+                properties:
+                  name:
+                    type: string
+                  port:
+                    format: int32
+                    type: integer
+                  protocol:
+                    type: string
+                  targetPort:
+                    oneOf:
+                    - type: string
+                    - type: integer
+                required:
+                - port
+                type: object
+              type: array
+            selector:
+              additionalProperties:
+                type: string
+              type: object
+          required:
+          - backends
+          - ports
           type: object
         status:
           type: object

@@ -1,13 +1,47 @@
+SHELL=/bin/bash -o pipefail
+
+FIRST_GOPATH:=$(firstword $(subst :, ,$(shell go env GOPATH)))
+GO_PKG=github.com/draveness/proxier
+K8S_GEN_BINARIES:=deepcopy-gen informer-gen lister-gen client-gen
+
+TYPES_V1_TARGET:=pkg/apis/maegus/v1/proxier_types.go
+
+K8S_GEN_DEPS:=.header
+K8S_GEN_DEPS+=$(TYPES_V1_TARGET)
+K8S_GEN_DEPS+=$(foreach bin,$(K8S_GEN_BINARIES),$(FIRST_GOPATH)/bin/$(bin))
+K8S_GEN_DEPS+=$(OPENAPI_GEN_BINARY)
+
 start:
 	operator-sdk up local --namespace=default
 
-LISTER_TARGET := pkg/client/listers/monitoring/v1/prometheus.go
+LISTER_TARGET := pkg/client/listers/maegus/v1/proxier.go
 $(LISTER_TARGET): $(K8S_GEN_DEPS)
 	$(LISTER_GEN_BINARY) \
 	$(K8S_GEN_ARGS) \
-	--input-dirs     "$(GO_PKG)/pkg/apis/monitoring/v1" \
+	--input-dirs     "$(GO_PKG)/pkg/apis/maegus/v1" \
 	--output-package "$(GO_PKG)/pkg/client/listers"
+
+CLIENT_TARGET := pkg/client/versioned/clientset.go
+$(CLIENT_TARGET): $(K8S_GEN_DEPS)
+	$(CLIENT_GEN_BINARY) \
+	$(K8S_GEN_ARGS) \
+	--input-base     "" \
+	--clientset-name "versioned" \
+	--input	         "$(GO_PKG)/pkg/apis/maegus/v1" \
+	--output-package "$(GO_PKG)/pkg/client"
 
 .PHONY: k8s-gen
 k8s-gen: \
 	$(LISTER_TARGET)
+
+define _K8S_GEN_VAR_TARGET_
+$(shell echo $(1) | tr '[:lower:]' '[:upper:]' | tr '-' '_')_BINARY:=$(FIRST_GOPATH)/bin/$(1)
+
+$(FIRST_GOPATH)/bin/$(1):
+	go get -u -d k8s.io/code-generator/cmd/$(1)
+	cd $(FIRST_GOPATH)/src/k8s.io/code-generator; git checkout $(K8S_GEN_VERSION)
+	go install k8s.io/code-generator/cmd/$(1)
+
+endef
+
+$(foreach binary,$(K8S_GEN_BINARIES),$(eval $(call _K8S_GEN_VAR_TARGET_,$(binary))))

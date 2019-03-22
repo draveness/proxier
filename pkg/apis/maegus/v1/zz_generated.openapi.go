@@ -67,10 +67,50 @@ func schema_pkg_apis_maegus_v1_ProxierSpec(ref common.ReferenceCallback) common.
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ProxierSpec defines the desired state of Proxier",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"backends": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("github.com/draveness/proxier/pkg/apis/maegus/v1.BackendSpec"),
+									},
+								},
+							},
+						},
+					},
+					"selector": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
+					"ports": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("github.com/draveness/proxier/pkg/apis/maegus/v1.ProxierPort"),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"backends", "ports"},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"github.com/draveness/proxier/pkg/apis/maegus/v1.BackendSpec", "github.com/draveness/proxier/pkg/apis/maegus/v1.ProxierPort"},
 	}
 }
 
