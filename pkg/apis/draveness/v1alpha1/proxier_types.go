@@ -69,6 +69,7 @@ type ProxierStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Proxier is the Schema for the proxiers API
+// +genclient
 // +k8s:openapi-gen=true
 type Proxier struct {
 	metav1.TypeMeta   `json:",inline"`
