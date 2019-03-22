@@ -30,9 +30,21 @@ $(CLIENT_TARGET): $(K8S_GEN_DEPS)
 	--input	         "$(GO_PKG)/pkg/apis/maegus/v1" \
 	--output-package "$(GO_PKG)/pkg/client"
 
+INFORMER_TARGET := pkg/client/informers/externalversions/maegus/v1/prixier.go
+$(INFORMER_TARGET): $(K8S_GEN_DEPS) $(LISTER_TARGET) $(CLIENT_TARGET)
+	$(INFORMER_GEN_BINARY) \
+	$(K8S_GEN_ARGS) \
+	--versioned-clientset-package "$(GO_PKG)/pkg/client/versioned" \
+	--listers-package "$(GO_PKG)/pkg/client/listers" \
+	--input-dirs      "$(GO_PKG)/pkg/apis/maegus/v1" \
+	--output-package  "$(GO_PKG)/pkg/client/informers"
+
 .PHONY: k8s-gen
 k8s-gen: \
-	$(LISTER_TARGET)
+  $(CLIENT_TARGET) \
+	$(LISTER_TARGET) \
+  $(INFORMER_TARGET)
+
 
 define _K8S_GEN_VAR_TARGET_
 $(shell echo $(1) | tr '[:lower:]' '[:upper:]' | tr '-' '_')_BINARY:=$(FIRST_GOPATH)/bin/$(1)
