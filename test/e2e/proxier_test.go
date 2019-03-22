@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	operator "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
+	operator "github.com/draveness/proxier/pkg/apis/maegus/v1"
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
@@ -17,7 +17,7 @@ func TestProxier(t *testing.T) {
 	proxierList := &operator.ProxierList{
 		TypeMeta: metav1.TypesMeta{
 			Kind:       "Proxier",
-			APIVersion: "draveness.me/v1alpha1",
+			APIVersion: "maegus.com/v1",
 		},
 	}
 
@@ -33,6 +33,8 @@ func TestProxier(t *testing.T) {
 }
 
 func TestCreateBasicProxier(t *testing.T) error {
+	t.Parallel()
+
 	ctx := framework.NewTestCtx(t)
 	defer ctx.Cleanup()
 

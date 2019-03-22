@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	dravenessv1alpha1 "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
 )
 
 type server struct {
@@ -51,7 +51,7 @@ type backend struct {
 	weight int32
 }
 
-func NewConfig(instance *dravenessv1alpha1.Proxier) string {
+func NewConfig(instance *maegusv1.Proxier) string {
 	servers := []server{}
 	for _, port := range instance.Spec.Ports {
 		server := server{

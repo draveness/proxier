@@ -47,7 +47,7 @@ rules:
   verbs:
   - update
 - apiGroups:
-  - draveness.me
+  - maegus.com
   resources:
   - '*'
   verbs:

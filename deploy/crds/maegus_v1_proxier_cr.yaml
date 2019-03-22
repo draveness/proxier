@@ -1,4 +1,4 @@
-apiVersion: draveness.me/v1alpha1
+apiVersion: maegus.com/v1
 kind: Proxier
 metadata:
   name: example-proxier

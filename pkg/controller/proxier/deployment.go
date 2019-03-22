@@ -3,7 +3,7 @@ package proxier
 import (
 	"context"
 
-	dravenessv1alpha1 "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
 	"github.com/draveness/proxier/pkg/controller/proxier/nginx"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -13,7 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) error {
+func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 	// Sync ConfigMap for deployment
 	newConfigMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -53,7 +53,7 @@ func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) e
 	deployment := newDeployment(instance)
 
 	annotations := map[string]string{}
-	annotations["draveness.me/proxier-config-hash"] = computeHash(newConfigMap)
+	annotations["maegus.com/proxier-config-hash"] = computeHash(newConfigMap)
 	deployment.Spec.Template.ObjectMeta.Annotations = annotations
 
 	if err := controllerutil.SetControllerReference(instance, deployment, r.scheme); err != nil {
@@ -86,7 +86,7 @@ func (r *ReconcileProxier) syncDeployment(instance *dravenessv1alpha1.Proxier) e
 }
 
 // newDeployment returns a busybox pod with the same name/namespace as the cr
-func newDeployment(cr *dravenessv1alpha1.Proxier) *appsv1.Deployment {
+func newDeployment(cr *maegusv1.Proxier) *appsv1.Deployment {
 	labels := newPodLabel(cr)
 
 	replicas := int32(1)

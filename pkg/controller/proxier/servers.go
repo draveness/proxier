@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	dravenessv1alpha1 "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *ReconcileProxier) syncServers(instance *dravenessv1alpha1.Proxier) error {
+func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 	backendsCount := len(instance.Spec.Backends)
 
 	proxierPorts := []corev1.ServicePort{}

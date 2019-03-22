@@ -3,7 +3,7 @@ package proxier
 import (
 	"context"
 
-	dravenessv1alpha1 "github.com/draveness/proxier/pkg/apis/draveness/v1alpha1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -46,14 +46,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	err = c.Watch(&source.Kind{Type: &dravenessv1alpha1.Proxier{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &maegusv1.Proxier{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
 
 	err = c.Watch(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &dravenessv1alpha1.Proxier{},
+		OwnerType:    &maegusv1.Proxier{},
 	})
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &dravenessv1alpha1.Proxier{},
+		OwnerType:    &maegusv1.Proxier{},
 	})
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	err = c.Watch(&source.Kind{Type: &corev1.Service{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &dravenessv1alpha1.Proxier{},
+		OwnerType:    &maegusv1.Proxier{},
 	})
 	if err != nil {
 		return err
@@ -95,7 +95,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 	reqLogger.Info("Reconciling Proxier")
 
 	// Fetch the Proxier instance
-	instance := &dravenessv1alpha1.Proxier{}
+	instance := &maegusv1.Proxier{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -126,7 +126,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileProxier) syncService(instance *dravenessv1alpha1.Proxier) error {
+func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 	// Define a new Pod object
 	service := newServiceForProxier(instance)
 
@@ -161,7 +161,7 @@ func (r *ReconcileProxier) syncService(instance *dravenessv1alpha1.Proxier) erro
 	return nil
 }
 
-func newServiceForProxier(instance *dravenessv1alpha1.Proxier) *corev1.Service {
+func newServiceForProxier(instance *maegusv1.Proxier) *corev1.Service {
 	selector := newPodLabel(instance)
 
 	proxierPorts := []corev1.ServicePort{}
