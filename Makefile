@@ -11,6 +11,9 @@ K8S_GEN_DEPS+=$(TYPES_V1_TARGET)
 K8S_GEN_DEPS+=$(foreach bin,$(K8S_GEN_BINARIES),$(FIRST_GOPATH)/bin/$(bin))
 K8S_GEN_DEPS+=$(OPENAPI_GEN_BINARY)
 
+e2e:
+	go test -v ./test/e2e/ --kubeconfig "$HOME/.kube/k8s-playground-kubeconfig.yaml"
+
 start:
 	operator-sdk up local --namespace=default
 

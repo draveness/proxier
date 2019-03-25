@@ -30,7 +30,6 @@ func (f *Framework) WaitForProxierReady(p *maegusv1.Proxier, timeout time.Durati
 	err := wait.Poll(2*time.Second, timeout, func() (bool, error) {
 		_, pollErr = f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
 
-		fmt.Println(pollErr)
 		if pollErr != nil {
 			return false, nil
 		}
