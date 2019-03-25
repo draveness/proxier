@@ -11,6 +11,54 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+func (f *Framework) MakeBasicProxier(ns, name string, versions []string, weights []int32) *maegusv1.Proxier {
+	backends := []maegusv1.BackendSpec{}
+	for i := range versions {
+		backends = append(backends, maegusv1.BackendSpec{
+			Name:   versions[i],
+			Weight: weights[i],
+			Selector: map[string]string{
+				"version": versions[i],
+			},
+		})
+	}
+
+	return &maegusv1.Proxier{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: ns,
+		},
+		Spec: maegusv1.ProxierSpec{
+			Selector: map[string]string{
+				"app": name,
+			},
+			Ports: []maegusv1.ProxierPort{
+				{
+					Name:     "http",
+					Protocol: maegusv1.ProtocolTCP,
+					Port:     80,
+				},
+			},
+			Backends: []maegusv1.BackendSpec{
+				{
+					Name:   "v1",
+					Weight: 100,
+					Selector: map[string]string{
+						"version": "v1",
+					},
+				},
+				{
+					Name:   "v2",
+					Weight: 10,
+					Selector: map[string]string{
+						"version": "v2",
+					},
+				},
+			},
+		},
+	}
+}
+
 func (f *Framework) CreateProxierAndWaitUntilReady(ns string, p *maegusv1.Proxier) (*maegusv1.Proxier, error) {
 	result, err := f.MaegusClientV1.Proxiers(ns).Create(p)
 	if err != nil {
@@ -28,7 +76,7 @@ func (f *Framework) WaitForProxierReady(p *maegusv1.Proxier, timeout time.Durati
 	var pollErr error
 
 	err := wait.Poll(2*time.Second, timeout, func() (bool, error) {
-		_, pollErr = f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
+		_, pollErr := f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
 
 		if pollErr != nil {
 			return false, nil
