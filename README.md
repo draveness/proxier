@@ -1,11 +1,10 @@
 # Proxier
 
-Proxier is a better approach to expose applications in Kubernetes. It supports load balancing to a set of pods with weights and provides advanced load balancing strategy by nginx, such as least connections, IP hash.
+Proxier is a better approach to expose applications in Kubernetes. It supports load balancing to a set of pods with weights and provides high-performance load balancing with nginx and HAProxy.
 
 + supports canary deployment and load balancing by weight
-+ provides advanced load balancing strategy
-+ be compatible with kubernetes service behavior
 + scales horizontally with pressure by default
++ builtin load balancing applications support, ex: nginx and HAProxy
 
 ```yaml
 apiVersion: maegus.com/v1
@@ -34,12 +33,13 @@ spec:
 
 ![proxier-architecture](./images/proxier-architecture.png)
 
-## Overview
-
 ## Installation
 
 ```
+kubectl apply -f https://raw.githubusercontent.com/draveness/proxier/master/deploy/deploy.yaml
 ```
+
+## Usage
 
 ## License
 
