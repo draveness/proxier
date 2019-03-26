@@ -1,4 +1,6 @@
-# proxier
+# Proxier
+
+## Architecture overview
 
 ![proxier-architecture](./images/proxier-architecture.png)
 
@@ -8,3 +10,5 @@
 
 ```
 ```
+
+## License
