@@ -29,4 +29,4 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "proxier"
+              value: "proxier-operator"

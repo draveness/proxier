@@ -61,16 +61,16 @@ func New(kubeconfig, opImage string) (*Framework, error) {
 }
 
 func (f *Framework) CreateProxierOperator(namespace string, namespacesToWatch []string) error {
-	_, err := CreateServiceAccount(f.KubeClient, namespace, "../../examples/service_account.yaml")
+	_, err := CreateServiceAccount(f.KubeClient, namespace, "../../deploy/service_account.yaml")
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return errors.Wrap(err, "failed to create proxier operator service account")
 	}
 
-	if err := CreateClusterRole(f.KubeClient, "../../examples/cluster_role.yaml"); err != nil && !apierrors.IsAlreadyExists(err) {
+	if err := CreateClusterRole(f.KubeClient, "../../deploy/cluster_role.yaml"); err != nil && !apierrors.IsAlreadyExists(err) {
 		return errors.Wrap(err, "failed to create proxier cluster role")
 	}
 
-	if _, err := CreateClusterRoleBinding(f.KubeClient, namespace, "../../examples/cluster_role_binding.yaml"); err != nil && !apierrors.IsAlreadyExists(err) {
+	if _, err := CreateClusterRoleBinding(f.KubeClient, namespace, "../../deploy/cluster_role_binding.yaml"); err != nil && !apierrors.IsAlreadyExists(err) {
 		return errors.Wrap(err, "failed to create prometheus cluster role binding")
 	}
 
@@ -101,7 +101,7 @@ func (f *Framework) CreateProxierOperator(namespace string, namespacesToWatch []
 }
 
 func (ctx *TestCtx) SetupProxierRBAC(t *testing.T, ns string, kubeClient kubernetes.Interface) {
-	if err := CreateClusterRole(kubeClient, "../../deploy/role.yaml"); err != nil && !apierrors.IsAlreadyExists(err) {
+	if err := CreateClusterRole(kubeClient, "../../deploy/cluster_role.yaml"); err != nil && !apierrors.IsAlreadyExists(err) {
 		t.Fatalf("failed to create proxier cluster role: %v", err)
 	}
 	if finalizerFn, err := CreateServiceAccount(kubeClient, ns, "../../deploy/service_account.yaml"); err != nil {
@@ -110,7 +110,7 @@ func (ctx *TestCtx) SetupProxierRBAC(t *testing.T, ns string, kubeClient kuberne
 		ctx.AddFinalizerFn(finalizerFn)
 	}
 
-	if finalizerFn, err := CreateRoleBinding(kubeClient, ns, "../../deploy/role_binding.yaml"); err != nil {
+	if finalizerFn, err := CreateClusterRoleBinding(kubeClient, ns, "../../deploy/cluster_role_binding.yaml"); err != nil {
 		t.Fatal(errors.Wrap(err, "failed to create proxier role binding"))
 	} else {
 		ctx.AddFinalizerFn(finalizerFn)
