@@ -74,6 +74,7 @@ func (f *Framework) CreateProxierOperator(namespace string, namespacesToWatch []
 		return errors.Wrap(err, "failed to create prometheus cluster role binding")
 	}
 
+	// TODO: update image
 	deployment, err := MakeDeployment("../../deploy/operator.yaml")
 	if err != nil {
 		return err
@@ -110,7 +111,7 @@ func (ctx *TestCtx) SetupProxierRBAC(t *testing.T, ns string, kubeClient kuberne
 		ctx.AddFinalizerFn(finalizerFn)
 	}
 
-	if finalizerFn, err := CreateClusterRoleBinding(kubeClient, ns, "../../deploy/cluster_role_binding.yaml"); err != nil {
+	if finalizerFn, err := CreateRoleBinding(kubeClient, ns, "../../deploy/cluster_role_binding.yaml"); err != nil {
 		t.Fatal(errors.Wrap(err, "failed to create proxier role binding"))
 	} else {
 		ctx.AddFinalizerFn(finalizerFn)

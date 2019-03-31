@@ -15,15 +15,13 @@ spec:
       serviceAccountName: proxier
       containers:
         - name: proxier
-          image: draveness/proxier:v0.1.1
+          image: draveness/proxier:v0.1.2
           command:
           - proxier
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
+              value: ""
             - name: POD_NAME
               valueFrom:
                 fieldRef:

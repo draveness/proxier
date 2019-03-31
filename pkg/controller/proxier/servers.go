@@ -40,6 +40,9 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-backend", instance.Name, backend.Name),
 				Namespace: instance.Namespace,
+				Labels: map[string]string{
+					"maegus.com/proxier-name": instance.Name,
+				},
 			},
 			Spec: corev1.ServiceSpec{
 				Selector: backendSelector,

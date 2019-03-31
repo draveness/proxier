@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -25,8 +24,6 @@ func testCreateBasicProxier(t *testing.T) {
 	}
 
 	err := wait.Poll(5*time.Second, 30*time.Second, func() (bool, error) {
-		svcList1, err := framework.KubeClient.CoreV1().Services(ns).List(metav1.ListOptions{})
-		fmt.Println(svcList1, err)
 		svcList, err := framework.KubeClient.CoreV1().Services(ns).List(metav1.ListOptions{
 			LabelSelector: "maegus.com/proxier-name=" + exampleProxier.Name,
 		})
