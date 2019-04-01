@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	operatorFramework "github.com/draveness/proxier/test/framework"
+	"github.com/stretchr/testify/suite"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/fields"
@@ -93,11 +94,5 @@ func TestAllNS(t *testing.T) {
 }
 
 func testAllNS(t *testing.T) {
-	testFuncs := map[string]func(t *testing.T){
-		"CreateBasicProxier": testCreateBasicProxier,
-	}
-
-	for name, f := range testFuncs {
-		t.Run(name, f)
-	}
+	suite.Run(t, new(ProxierCreateSuite))
 }

@@ -2,29 +2,37 @@ package e2e
 
 import (
 	"errors"
-	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func testCreateBasicProxier(t *testing.T) {
-	t.Parallel()
+type ProxierCreateSuite struct {
+	suite.Suite
+	namespace string
+}
 
-	ctx := framework.NewTestCtx(t)
-	defer ctx.Cleanup(t)
-	ns := ctx.CreateNamespace(t, framework.KubeClient)
-	ctx.SetupProxierRBAC(t, ns, framework.KubeClient)
+func (suite *ProxierCreateSuite) SetupTest() {
+	ctx := framework.NewTestCtx(suite.T())
+	defer ctx.Cleanup(suite.T())
+	ns := ctx.CreateNamespace(suite.T(), framework.KubeClient)
+	ctx.SetupProxierRBAC(suite.T(), ns, framework.KubeClient)
+}
 
-	exampleProxier := framework.MakeBasicProxier(ns, "test", []string{"v1", "v2"}, []int32{100, 10})
+func (suite *ProxierCreateSuite) testProxierCreateBackends() {
+	suite.T().Parallel()
 
-	if _, err := framework.CreateProxierAndWaitUntilReady(ns, exampleProxier); err != nil {
-		t.Fatal(err)
+	exampleProxier := framework.MakeBasicProxier(suite.namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
+
+	if _, err := framework.CreateProxierAndWaitUntilReady(suite.namespace, exampleProxier); err != nil {
+		suite.T().Fatal(err)
 	}
 
 	err := wait.Poll(5*time.Second, 30*time.Second, func() (bool, error) {
-		svcList, err := framework.KubeClient.CoreV1().Services(ns).List(metav1.ListOptions{
+		svcList, err := framework.KubeClient.CoreV1().Services(suite.namespace).List(metav1.ListOptions{
 			LabelSelector: "maegus.com/proxier-name=" + exampleProxier.Name,
 		})
 		if err != nil {
@@ -39,6 +47,6 @@ func testCreateBasicProxier(t *testing.T) {
 	})
 
 	if err != nil {
-		t.Fatal(err)
+		suite.T().Fatal(err)
 	}
 }
