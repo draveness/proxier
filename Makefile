@@ -11,7 +11,7 @@ K8S_GEN_DEPS+=$(TYPES_V1_TARGET)
 K8S_GEN_DEPS+=$(foreach bin,$(K8S_GEN_BINARIES),$(FIRST_GOPATH)/bin/$(bin))
 K8S_GEN_DEPS+=$(OPENAPI_GEN_BINARY)
 
-OPERATOR_E2E_IMAGE_NAME:=draveness/proxier-e2e:$(shell git rev-parse HEAD)
+OPERATOR_E2E_IMAGE_NAME:=draveness/proxier-e2e:$(shell git rev-parse --short HEAD)
 
 e2e:
 	operator-sdk build $(OPERATOR_E2E_IMAGE_NAME)
