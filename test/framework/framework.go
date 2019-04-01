@@ -2,6 +2,7 @@ package framework
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -60,7 +61,7 @@ func New(kubeconfig, opImage string) (*Framework, error) {
 	return f, nil
 }
 
-func (f *Framework) CreateProxierOperator(namespace string, namespacesToWatch []string) error {
+func (f *Framework) CreateProxierOperator(namespace string, operatorImage string, namespacesToWatch []string) error {
 	_, err := CreateServiceAccount(f.KubeClient, namespace, "../../deploy/service_account.yaml")
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return errors.Wrap(err, "failed to create proxier operator service account")
@@ -74,10 +75,22 @@ func (f *Framework) CreateProxierOperator(namespace string, namespacesToWatch []
 		return errors.Wrap(err, "failed to create prometheus cluster role binding")
 	}
 
-	// TODO: update image
 	deployment, err := MakeDeployment("../../deploy/operator.yaml")
 	if err != nil {
 		return err
+	}
+
+	if operatorImage != "" {
+		// Override operator image used, if specified when running tests.
+		deployment.Spec.Template.Spec.Containers[0].Image = operatorImage
+		repoAndTag := strings.Split(operatorImage, ":")
+		if len(repoAndTag) != 2 {
+			return errors.Errorf(
+				"expected operator image '%v' split by colon to result in two substrings but got '%v'",
+				operatorImage,
+				repoAndTag,
+			)
+		}
 	}
 
 	err = CreateDeployment(f.KubeClient, namespace, deployment)

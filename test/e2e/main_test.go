@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	framework *operatorFramework.Framework
-	opImage   *string
+	framework     *operatorFramework.Framework
+	operatorImage *string
 )
 
 func TestMain(m *testing.M) {
@@ -23,10 +23,10 @@ func TestMain(m *testing.M) {
 		"",
 		"kube config path, e.g. $HOME/.kube/config",
 	)
-	opImage = flag.String(
+	operatorImage = flag.String(
 		"operator-image",
 		"",
-		"operator image, e.g. quay.io//prometheus-operator",
+		"operator image, e.g. draveness/proxier:v1.0.0",
 	)
 	flag.Parse()
 
@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 		exitCode int
 	)
 
-	if framework, err = operatorFramework.New(*kubeconfig, *opImage); err != nil {
+	if framework, err = operatorFramework.New(*kubeconfig, *operatorImage); err != nil {
 		log.Printf("failed to setup framework: %v\n", err)
 		os.Exit(1)
 	}
@@ -51,7 +51,7 @@ func TestAllNS(t *testing.T) {
 
 	ns := ctx.CreateNamespace(t, framework.KubeClient)
 
-	err := framework.CreateProxierOperator(ns, nil)
+	err := framework.CreateProxierOperator(ns, *operatorImage, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
