@@ -58,12 +58,34 @@ type BackendSpec struct {
 	Selector map[string]string `json:"selector,omitempty"`
 }
 
+// ProxierPhase is a label for the condition of a proxier at the current time.
+type ProxierPhase string
+
+// These are the valid statuses of proxiers.
+const (
+	// ProxierPending means the proxier has been accepted by the system, but one or more of the containers
+	// has not been started. This includes time before being bound to a node, as well as time spent
+	// pulling images onto the host.
+	ProxierPending ProxierPhase = "Pending"
+	// ProxierRunning means the proxier has been bound to a node and all of the containers have been started.
+	// At least one container is still running or is in the process of being restarted.
+	ProxierRunning ProxierPhase = "Running"
+	// ProxierSucceeded means that all containers in the proxier have voluntarily terminated
+	// with a container exit code of 0, and the system is not going to restart any of these containers.
+	ProxierSucceeded ProxierPhase = "Succeeded"
+	// ProxierFailed means that all containers in the proxier have terminated, and at least one container has
+	// terminated in a failure (exited with a non-zero exit code or was stopped by the system).
+	ProxierFailed ProxierPhase = "Failed"
+	// ProxierUnknown means that for some reason the state of the proxier could not be obtained, typically due
+	// to an error in communicating with the host of the proxier.
+	ProxierUnknown ProxierPhase = "Unknown"
+)
+
 // ProxierStatus defines the observed state of Proxier
 // +k8s:openapi-gen=true
 type ProxierStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
+	// +optional
+	Phase ProxierPhase `json:"phase,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
