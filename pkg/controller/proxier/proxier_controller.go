@@ -123,7 +123,16 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
+	r.updateProxierStatus(instance, &maegusv1.ProxierStatus{
+		Phase: maegusv1.ProxierRunning,
+	})
+
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileProxier) updateProxierStatus(instance *maegusv1.Proxier, proxierStatus *maegusv1.ProxierStatus) error {
+	instance.Status = *proxierStatus
+	return r.client.Update(context.TODO(), instance)
 }
 
 func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
