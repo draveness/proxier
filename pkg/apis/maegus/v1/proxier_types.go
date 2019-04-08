@@ -70,12 +70,6 @@ const (
 	// ProxierRunning means the proxier has been bound to a node and all of the containers have been started.
 	// At least one container is still running or is in the process of being restarted.
 	ProxierRunning ProxierPhase = "Running"
-	// ProxierSucceeded means that all containers in the proxier have voluntarily terminated
-	// with a container exit code of 0, and the system is not going to restart any of these containers.
-	ProxierSucceeded ProxierPhase = "Succeeded"
-	// ProxierFailed means that all containers in the proxier have terminated, and at least one container has
-	// terminated in a failure (exited with a non-zero exit code or was stopped by the system).
-	ProxierFailed ProxierPhase = "Failed"
 	// ProxierUnknown means that for some reason the state of the proxier could not be obtained, typically due
 	// to an error in communicating with the host of the proxier.
 	ProxierUnknown ProxierPhase = "Unknown"
