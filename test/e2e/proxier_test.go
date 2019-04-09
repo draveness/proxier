@@ -2,12 +2,9 @@ package e2e
 
 import (
 	"errors"
-	"time"
 
 	"github.com/stretchr/testify/suite"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type ProxierCreateSuite struct {
@@ -31,20 +28,16 @@ func (suite *ProxierCreateSuite) testProxierCreateBackends() {
 		suite.T().Fatal(err)
 	}
 
-	err := wait.Poll(5*time.Second, 30*time.Second, func() (bool, error) {
-		svcList, err := framework.KubeClient.CoreV1().Services(suite.namespace).List(metav1.ListOptions{
-			LabelSelector: "maegus.com/proxier-name=" + exampleProxier.Name,
-		})
-		if err != nil {
-			return false, err
-		}
-
-		if len(svcList.Items) != 2 {
-			return false, errors.New("proxier should create backend services")
-		}
-
-		return true, nil
+	svcList, err := framework.KubeClient.CoreV1().Services(suite.namespace).List(metav1.ListOptions{
+		LabelSelector: "maegus.com/proxier-name=" + exampleProxier.Name,
 	})
+	if err != nil {
+		suite.T().Fatal(err)
+	}
+
+	if len(svcList.Items) != 2 {
+		suite.T().Fatal(errors.New("proxier should create backend services"))
+	}
 
 	if err != nil {
 		suite.T().Fatal(err)
