@@ -87,6 +87,8 @@ type ProxierStatus struct {
 // Proxier is the Schema for the proxiers API
 // +genclient
 // +k8s:openapi-gen=true
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="phase of the proxier"
+// +kubebuilder:subresource:status
 type Proxier struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

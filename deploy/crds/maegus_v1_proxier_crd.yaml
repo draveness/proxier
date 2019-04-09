@@ -70,6 +70,9 @@ spec:
           - ports
           type: object
         status:
+          properties:
+            phase:
+              type: string
           type: object
   version: v1
   versions:
