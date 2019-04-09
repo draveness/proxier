@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+// MakeBasicProxier returns a proxier with given versions and weights.
 func (f *Framework) MakeBasicProxier(ns, name string, versions []string, weights []int32) *maegusv1.Proxier {
 	backends := []maegusv1.BackendSpec{}
 	for i := range versions {
@@ -59,6 +60,7 @@ func (f *Framework) MakeBasicProxier(ns, name string, versions []string, weights
 	}
 }
 
+// CreateProxierAndWaitUntilReady creates a proxier instance and waits until ready.
 func (f *Framework) CreateProxierAndWaitUntilReady(ns string, p *maegusv1.Proxier) (*maegusv1.Proxier, error) {
 	result, err := f.MaegusClientV1.Proxiers(ns).Create(p)
 	if err != nil {
@@ -72,13 +74,18 @@ func (f *Framework) CreateProxierAndWaitUntilReady(ns string, p *maegusv1.Proxie
 	return result, nil
 }
 
+// WaitForProxierReady returns when proxier shifted to running phase or timeout.
 func (f *Framework) WaitForProxierReady(p *maegusv1.Proxier, timeout time.Duration) error {
 	var pollErr error
 
 	err := wait.Poll(2*time.Second, timeout, func() (bool, error) {
-		_, pollErr := f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
+		proxier, pollErr := f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
 
 		if pollErr != nil {
+			return false, nil
+		}
+
+		if proxier.Status.Phase != maegusv1.ProxierRunning {
 			return false, nil
 		}
 
