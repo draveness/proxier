@@ -50,7 +50,7 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 		return err
 	}
 
-	deployment := newDeployment(instance)
+	deployment := NewDeployment(instance)
 
 	annotations := map[string]string{}
 	annotations["maegus.com/proxier-config-hash"] = computeHash(newConfigMap)
@@ -85,16 +85,16 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 	return nil
 }
 
-// newDeployment returns a busybox pod with the same name/namespace as the cr
-func newDeployment(cr *maegusv1.Proxier) *appsv1.Deployment {
-	labels := newPodLabel(cr)
+// NewDeployment returns a nginx pod with the same namespace as the instance
+func NewDeployment(instance *maegusv1.Proxier) *appsv1.Deployment {
+	labels := newPodLabel(instance)
 
 	replicas := int32(1)
 
 	deployment := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-proxy",
-			Namespace: cr.Namespace,
+			Name:      NewDeploymentName(instance),
+			Namespace: instance.Namespace,
 			Labels:    labels,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -104,8 +104,8 @@ func newDeployment(cr *maegusv1.Proxier) *appsv1.Deployment {
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      cr.Name + "-proxy",
-					Namespace: cr.Namespace,
+					Name:      instance.Name + "-proxy",
+					Namespace: instance.Namespace,
 					Labels:    labels,
 				},
 				Spec: corev1.PodSpec{
@@ -120,7 +120,7 @@ func newDeployment(cr *maegusv1.Proxier) *appsv1.Deployment {
 							},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      cr.Name + "-proxy-configmap",
+									Name:      instance.Name + "-proxy-configmap",
 									MountPath: "/etc/nginx",
 									ReadOnly:  true,
 								},
@@ -129,11 +129,11 @@ func newDeployment(cr *maegusv1.Proxier) *appsv1.Deployment {
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: cr.Name + "-proxy-configmap",
+							Name: instance.Name + "-proxy-configmap",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: cr.Name + "-proxy-configmap",
+										Name: instance.Name + "-proxy-configmap",
 									},
 								},
 							},
@@ -145,4 +145,9 @@ func newDeployment(cr *maegusv1.Proxier) *appsv1.Deployment {
 	}
 
 	return &deployment
+}
+
+// NewDeploymentName returns deployment name for specific proxier.
+func NewDeploymentName(instance *maegusv1.Proxier) string {
+	return instance.Name + "-proxy"
 }

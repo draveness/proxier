@@ -1,8 +1,8 @@
 package e2e
 
 import (
-	"errors"
-
+	"github.com/draveness/proxier/pkg/controller/proxier"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -24,22 +24,20 @@ func (suite *ProxierCreateSuite) testProxierCreateBackends() {
 
 	exampleProxier := framework.MakeBasicProxier(suite.namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
 
-	if _, err := framework.CreateProxierAndWaitUntilReady(suite.namespace, exampleProxier); err != nil {
-		suite.T().Fatal(err)
-	}
+	_, err := framework.CreateProxierAndWaitUntilReady(suite.namespace, exampleProxier)
+
+	assert.Nil(suite.T(), err, "create proxier error")
 
 	svcList, err := framework.KubeClient.CoreV1().Services(suite.namespace).List(metav1.ListOptions{
 		LabelSelector: "maegus.com/proxier-name=" + exampleProxier.Name,
 	})
-	if err != nil {
-		suite.T().Fatal(err)
-	}
 
-	if len(svcList.Items) != 2 {
-		suite.T().Fatal(errors.New("proxier should create backend services"))
-	}
+	assert.Nil(suite.T(), err, "list service error")
+	assert.Equal(suite.T(), 2, len(svcList.Items), "proxier should create backend services")
 
-	if err != nil {
-		suite.T().Fatal(err)
-	}
+	deploymentName := proxier.NewDeploymentName(exampleProxier)
+	deployment, err := framework.KubeClient.AppsV1().Deployments(suite.namespace).Get(deploymentName, metav1.GetOptions{})
+
+	assert.Nil(suite.T(), err, "get deployment error")
+	assert.Equal(suite.T(), "nginx:1.15.9", deployment.Spec.Template.Spec.Containers[0].Image, "invalid nginx image")
 }
