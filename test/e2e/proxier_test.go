@@ -46,7 +46,6 @@ func (suite *ProxierCreateSuite) TestProxierCreateNginxDeployment() {
 	exampleProxier := framework.MakeBasicProxier(namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
 
 	_, err := framework.CreateProxierAndWaitUntilReady(namespace, exampleProxier)
-
 	assert.Nil(suite.T(), err, "create proxier error")
 
 	deploymentName := proxier.NewDeploymentName(exampleProxier)
@@ -55,4 +54,23 @@ func (suite *ProxierCreateSuite) TestProxierCreateNginxDeployment() {
 	assert.Nil(suite.T(), err, "get deployment error")
 	assert.Equal(suite.T(), "nginx", deployment.Spec.Template.Spec.Containers[0].Name, "invalid nginx name")
 	assert.Equal(suite.T(), "nginx:1.15.9", deployment.Spec.Template.Spec.Containers[0].Image, "invalid nginx image")
+}
+
+func (suite *ProxierCreateSuite) TestProxierCreateService() {
+	ctx := framework.NewTestCtx(suite.T())
+	defer ctx.Cleanup(suite.T())
+
+	namespace := ctx.CreateNamespace(suite.T(), framework.KubeClient)
+	ctx.SetupProxierRBAC(suite.T(), namespace, framework.KubeClient)
+
+	suite.T().Parallel()
+
+	exampleProxier := framework.MakeBasicProxier(namespace, "echo", []string{"v1", "v2"}, []int32{100, 10})
+
+	_, err := framework.CreateProxierAndWaitUntilReady(namespace, exampleProxier)
+	assert.Nil(suite.T(), err, "create proxier error")
+
+	proxierService, err := framework.KubeClient.CoreV1().Services(namespace).Get(exampleProxier.Name, metav1.GetOptions{})
+	assert.Nil(suite.T(), err, "get service error")
+	assert.Equal(suite.T(), exampleProxier.Name, proxierService.Name, "proxier and service shoud have the same name")
 }
