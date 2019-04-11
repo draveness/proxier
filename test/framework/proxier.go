@@ -40,22 +40,7 @@ func (f *Framework) MakeBasicProxier(ns, name string, versions []string, weights
 					Port:     80,
 				},
 			},
-			Backends: []maegusv1.BackendSpec{
-				{
-					Name:   "v1",
-					Weight: 100,
-					Selector: map[string]string{
-						"version": "v1",
-					},
-				},
-				{
-					Name:   "v2",
-					Weight: 10,
-					Selector: map[string]string{
-						"version": "v2",
-					},
-				},
-			},
+			Backends: backends,
 		},
 	}
 }
