@@ -81,3 +81,21 @@ func (f *Framework) WaitForPodReady(pod *v1.Pod, timeout time.Duration) error {
 	})
 	return errors.Wrapf(pollErr, "waiting for Proxier %v/%v: %v", pod.Namespace, pod.Name, err)
 }
+
+// PodRunningAndReady returns whether a pod is running and each container has
+// passed it's ready state.
+func PodRunningAndReady(pod v1.Pod) (bool, error) {
+	switch pod.Status.Phase {
+	case v1.PodFailed, v1.PodSucceeded:
+		return false, fmt.Errorf("pod completed")
+	case v1.PodRunning:
+		for _, cond := range pod.Status.Conditions {
+			if cond.Type != v1.PodReady {
+				continue
+			}
+			return cond.Status == v1.ConditionTrue, nil
+		}
+		return false, fmt.Errorf("pod ready condition not found")
+	}
+	return false, nil
+}

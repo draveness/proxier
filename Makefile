@@ -14,6 +14,10 @@ K8S_GEN_DEPS+=$(OPENAPI_GEN_BINARY)
 OPERATOR_E2E_IMAGE_TAG:=$(shell git rev-parse --short HEAD)
 OPERATOR_E2E_IMAGE_NAME:=draveness/proxier-e2e:$(OPERATOR_E2E_IMAGE_TAG)
 
+.PHONY: test
+test:
+	go test -count=1 ./...
+
 e2e:
 	./hack/docker_image_exists.sh || \
 	(operator-sdk build $(OPERATOR_E2E_IMAGE_NAME) && docker push $(OPERATOR_E2E_IMAGE_NAME))

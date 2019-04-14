@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/prometheus-operator/pkg/k8sutil"
 	maegusclient "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
@@ -104,7 +103,7 @@ func (f *Framework) CreateProxierOperator(namespace string, operatorImage string
 		return errors.Wrap(err, "failed to wait for prometheus operator to become ready")
 	}
 
-	err = k8sutil.WaitForCRDReady(func(opts metav1.ListOptions) (runtime.Object, error) {
+	err = WaitForCRDReady(func(opts metav1.ListOptions) (runtime.Object, error) {
 		return f.MaegusClientV1.Proxiers(v1.NamespaceAll).List(opts)
 	})
 	if err != nil {

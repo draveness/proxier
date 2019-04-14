@@ -139,7 +139,10 @@ func (r *ReconcileProxier) updateProxierStatus(instance *maegusv1.Proxier, proxi
 
 func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 	// Define a new Pod object
-	service := newServiceForProxier(instance)
+	service, err := newServiceForProxier(instance)
+	if err != nil {
+		return err
+	}
 
 	// Set Proxier instance as the owner and controller
 	if err := controllerutil.SetControllerReference(instance, service, r.scheme); err != nil {
@@ -172,8 +175,11 @@ func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 	return nil
 }
 
-func newServiceForProxier(instance *maegusv1.Proxier) *corev1.Service {
-	selector := newPodLabel(instance)
+func newServiceForProxier(instance *maegusv1.Proxier) (*corev1.Service, error) {
+	selector, err := newPodLabel(instance)
+	if err != nil {
+		return nil, err
+	}
 
 	proxierPorts := []corev1.ServicePort{}
 	for _, port := range instance.Spec.Ports {

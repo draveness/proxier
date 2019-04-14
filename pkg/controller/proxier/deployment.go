@@ -50,10 +50,13 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 		return err
 	}
 
-	deployment := NewDeployment(instance)
+	deployment, err := NewDeployment(instance)
+	if err != nil {
+		return err
+	}
 
 	annotations := map[string]string{}
-	annotations["maegus.com/proxier-config-hash"] = computeHash(newConfigMap)
+	annotations[margusv1.ConfigMapHashAnnotationKey] = computeHash(newConfigMap)
 	deployment.Spec.Template.ObjectMeta.Annotations = annotations
 
 	if err := controllerutil.SetControllerReference(instance, deployment, r.scheme); err != nil {
@@ -86,8 +89,11 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 }
 
 // NewDeployment returns a nginx pod with the same namespace as the instance
-func NewDeployment(instance *maegusv1.Proxier) *appsv1.Deployment {
-	labels := newPodLabel(instance)
+func NewDeployment(instance *maegusv1.Proxier) (*appsv1.Deployment, error) {
+	labels, err := newPodLabel(instance)
+	if err != nil {
+		return nil, err
+	}
 
 	replicas := int32(1)
 

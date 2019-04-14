@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/coreos/prometheus-operator/pkg/k8sutil"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -38,7 +37,7 @@ func WaitForPodsReady(kubeClient kubernetes.Interface, namespace string, timeout
 
 		runningAndReady := 0
 		for _, p := range pl.Items {
-			isRunningAndReady, err := k8sutil.PodRunningAndReady(p)
+			isRunningAndReady, err := PodRunningAndReady(p)
 			if err != nil {
 				return false, err
 			}
