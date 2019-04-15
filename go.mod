@@ -2,6 +2,8 @@ module github.com/draveness/proxier
 
 go 1.12
 
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
+
 require (
 	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30 // indirect
 	github.com/coreos/prometheus-operator v0.29.0 // indirect
@@ -11,8 +13,12 @@ require (
 	github.com/go-logr/logr v0.1.0 // indirect
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/go-openapi/spec v0.19.0
+	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
+	github.com/json-iterator/go v1.1.6 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/operator-framework/operator-sdk v0.7.0
 	github.com/pkg/errors v0.8.1
@@ -25,6 +31,7 @@ require (
 	golang.org/x/sync v0.0.0-20190412183630-56d357773e84
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	google.golang.org/appengine v1.5.0 // indirect
+	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.3.1 // indirect
 	k8s.io/api v0.0.0-20190413052509-3cc1b3fb6d0f
 	k8s.io/apiextensions-apiserver v0.0.0-20190413053546-d0acb7a76918 // indirect
