@@ -73,11 +73,9 @@ func (c defaultTableConvertor) ConvertToTable(ctx context.Context, object runtim
 			table.SelfLink = m.GetSelfLink()
 		}
 	}
-	if opt, ok := tableOptions.(*metav1beta1.TableOptions); !ok || !opt.NoHeaders {
-		table.ColumnDefinitions = []metav1beta1.TableColumnDefinition{
-			{Name: "Name", Type: "string", Format: "name", Description: swaggerMetadataDescriptions["name"]},
-			{Name: "Created At", Type: "date", Description: swaggerMetadataDescriptions["creationTimestamp"]},
-		}
+	table.ColumnDefinitions = []metav1beta1.TableColumnDefinition{
+		{Name: "Name", Type: "string", Format: "name", Description: swaggerMetadataDescriptions["name"]},
+		{Name: "Created At", Type: "date", Description: swaggerMetadataDescriptions["creationTimestamp"]},
 	}
 	return &table, nil
 }

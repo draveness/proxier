@@ -19,7 +19,6 @@ package webhook
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	authentication "k8s.io/api/authentication/v1beta1"
@@ -121,11 +120,7 @@ func (w *WebhookTokenAuthenticator) AuthenticateToken(ctx context.Context, token
 
 	r.Status = result.Status
 	if !r.Status.Authenticated {
-		var err error
-		if len(r.Status.Error) != 0 {
-			err = errors.New(r.Status.Error)
-		}
-		return nil, false, err
+		return nil, false, nil
 	}
 
 	var extra map[string][]string

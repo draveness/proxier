@@ -34,7 +34,7 @@ import (
 
 const (
 	governingServiceName   = "alertmanager-operated"
-	defaultVersion         = "v0.15.3"
+	defaultVersion         = "v0.16.1"
 	defaultRetention       = "120h"
 	secretsDir             = "/etc/alertmanager/secrets/"
 	configmapsDir          = "/etc/alertmanager/configmaps/"
@@ -194,6 +194,9 @@ func makeStatefulSetSpec(a *monitoringv1.Alertmanager, config Config) (*appsv1.S
 	}
 	if a.Spec.SHA != "" {
 		image = fmt.Sprintf("%s@sha256:%s", a.Spec.BaseImage, a.Spec.SHA)
+	}
+	if a.Spec.Image != nil && *a.Spec.Image != "" {
+		image = *a.Spec.Image
 	}
 
 	versionStr := strings.TrimLeft(a.Spec.Version, "v")
@@ -459,8 +462,8 @@ func makeStatefulSetSpec(a *monitoringv1.Alertmanager, config Config) (*appsv1.S
 						},
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
-								v1.ResourceCPU:    resource.MustParse("50m"),
-								v1.ResourceMemory: resource.MustParse("10Mi"),
+								v1.ResourceCPU:    resource.MustParse(config.ConfigReloaderCPU),
+								v1.ResourceMemory: resource.MustParse(config.ConfigReloaderMemory),
 							},
 						},
 					},

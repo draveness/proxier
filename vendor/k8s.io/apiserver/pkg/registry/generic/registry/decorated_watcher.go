@@ -45,15 +45,9 @@ func newDecoratedWatcher(w watch.Interface, decorator ObjectFunc) *decoratedWatc
 
 func (d *decoratedWatcher) run(ctx context.Context) {
 	var recv, send watch.Event
-	var ok bool
 	for {
 		select {
-		case recv, ok = <-d.w.ResultChan():
-			// The underlying channel may be closed after timeout.
-			if !ok {
-				d.cancel()
-				return
-			}
+		case recv = <-d.w.ResultChan():
 			switch recv.Type {
 			case watch.Added, watch.Modified, watch.Deleted:
 				err := d.decorator(recv.Object)

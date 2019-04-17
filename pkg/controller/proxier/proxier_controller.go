@@ -151,7 +151,7 @@ func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 
 	// Check if this Service already exists
 	found := &corev1.Service{}
-	err := r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
+	err = r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		err = r.client.Create(context.TODO(), service)
 		if err != nil {
@@ -200,5 +200,5 @@ func newServiceForProxier(instance *maegusv1.Proxier) (*corev1.Service, error) {
 			Type:     corev1.ServiceTypeClusterIP,
 			Ports:    proxierPorts,
 		},
-	}
+	}, nil
 }

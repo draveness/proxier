@@ -75,27 +75,27 @@ type pluginHandlerWithMetrics struct {
 }
 
 // Admit performs a mutating admission control check and emit metrics.
-func (p pluginHandlerWithMetrics) Admit(a admission.Attributes, o admission.ObjectInterfaces) error {
+func (p pluginHandlerWithMetrics) Admit(a admission.Attributes) error {
 	mutatingHandler, ok := p.Interface.(admission.MutationInterface)
 	if !ok {
 		return nil
 	}
 
 	start := time.Now()
-	err := mutatingHandler.Admit(a, o)
+	err := mutatingHandler.Admit(a)
 	p.observer(time.Since(start), err != nil, a, stepAdmit, p.extraLabels...)
 	return err
 }
 
 // Validate performs a non-mutating admission control check and emits metrics.
-func (p pluginHandlerWithMetrics) Validate(a admission.Attributes, o admission.ObjectInterfaces) error {
+func (p pluginHandlerWithMetrics) Validate(a admission.Attributes) error {
 	validatingHandler, ok := p.Interface.(admission.ValidationInterface)
 	if !ok {
 		return nil
 	}
 
 	start := time.Now()
-	err := validatingHandler.Validate(a, o)
+	err := validatingHandler.Validate(a)
 	p.observer(time.Since(start), err != nil, a, stepValidate, p.extraLabels...)
 	return err
 }
@@ -164,8 +164,8 @@ func newMetricSet(name string, labels []string, helpTemplate string, hasSummary 
 			prometheus.SummaryOpts{
 				Namespace: namespace,
 				Subsystem: subsystem,
-				Name:      fmt.Sprintf("%s_admission_duration_seconds_summary", name),
-				Help:      fmt.Sprintf(helpTemplate, "latency summary in seconds"),
+				Name:      fmt.Sprintf("%s_admission_latencies_seconds_summary", name),
+				Help:      fmt.Sprintf(helpTemplate, "latency summary"),
 				MaxAge:    latencySummaryMaxAge,
 			},
 			labels,
@@ -177,8 +177,8 @@ func newMetricSet(name string, labels []string, helpTemplate string, hasSummary 
 			prometheus.HistogramOpts{
 				Namespace: namespace,
 				Subsystem: subsystem,
-				Name:      fmt.Sprintf("%s_admission_duration_seconds", name),
-				Help:      fmt.Sprintf(helpTemplate, "latency histogram in seconds"),
+				Name:      fmt.Sprintf("%s_admission_latencies_seconds", name),
+				Help:      fmt.Sprintf(helpTemplate, "latency histogram"),
 				Buckets:   latencyBuckets,
 			},
 			labels,
@@ -206,9 +206,9 @@ func (m *metricSet) reset() {
 
 // Observe records an observed admission event to all metrics in the metricSet.
 func (m *metricSet) observe(elapsed time.Duration, labels ...string) {
-	elapsedSeconds := elapsed.Seconds()
-	m.latencies.WithLabelValues(labels...).Observe(elapsedSeconds)
+	elapsedMicroseconds := float64(elapsed / time.Microsecond)
+	m.latencies.WithLabelValues(labels...).Observe(elapsedMicroseconds)
 	if m.latenciesSummary != nil {
-		m.latenciesSummary.WithLabelValues(labels...).Observe(elapsedSeconds)
+		m.latenciesSummary.WithLabelValues(labels...).Observe(elapsedMicroseconds)
 	}
 }

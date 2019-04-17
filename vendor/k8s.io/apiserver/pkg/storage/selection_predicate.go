@@ -25,58 +25,59 @@ import (
 
 // AttrFunc returns label and field sets and the uninitialized flag for List or Watch to match.
 // In any failure to parse given object, it returns error.
-type AttrFunc func(obj runtime.Object) (labels.Set, fields.Set, error)
+type AttrFunc func(obj runtime.Object) (labels.Set, fields.Set, bool, error)
 
 // FieldMutationFunc allows the mutation of the field selection fields.  It is mutating to
 // avoid the extra allocation on this common path
 type FieldMutationFunc func(obj runtime.Object, fieldSet fields.Set) error
 
-func DefaultClusterScopedAttr(obj runtime.Object) (labels.Set, fields.Set, error) {
+func DefaultClusterScopedAttr(obj runtime.Object) (labels.Set, fields.Set, bool, error) {
 	metadata, err := meta.Accessor(obj)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 	fieldSet := fields.Set{
 		"metadata.name": metadata.GetName(),
 	}
 
-	return labels.Set(metadata.GetLabels()), fieldSet, nil
+	return labels.Set(metadata.GetLabels()), fieldSet, metadata.GetInitializers() != nil, nil
 }
 
-func DefaultNamespaceScopedAttr(obj runtime.Object) (labels.Set, fields.Set, error) {
+func DefaultNamespaceScopedAttr(obj runtime.Object) (labels.Set, fields.Set, bool, error) {
 	metadata, err := meta.Accessor(obj)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 	fieldSet := fields.Set{
 		"metadata.name":      metadata.GetName(),
 		"metadata.namespace": metadata.GetNamespace(),
 	}
 
-	return labels.Set(metadata.GetLabels()), fieldSet, nil
+	return labels.Set(metadata.GetLabels()), fieldSet, metadata.GetInitializers() != nil, nil
 }
 
 func (f AttrFunc) WithFieldMutation(fieldMutator FieldMutationFunc) AttrFunc {
-	return func(obj runtime.Object) (labels.Set, fields.Set, error) {
-		labelSet, fieldSet, err := f(obj)
+	return func(obj runtime.Object) (labels.Set, fields.Set, bool, error) {
+		labelSet, fieldSet, initialized, err := f(obj)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, false, err
 		}
 		if err := fieldMutator(obj, fieldSet); err != nil {
-			return nil, nil, err
+			return nil, nil, false, err
 		}
-		return labelSet, fieldSet, nil
+		return labelSet, fieldSet, initialized, nil
 	}
 }
 
 // SelectionPredicate is used to represent the way to select objects from api storage.
 type SelectionPredicate struct {
-	Label       labels.Selector
-	Field       fields.Selector
-	GetAttrs    AttrFunc
-	IndexFields []string
-	Limit       int64
-	Continue    string
+	Label                labels.Selector
+	Field                fields.Selector
+	IncludeUninitialized bool
+	GetAttrs             AttrFunc
+	IndexFields          []string
+	Limit                int64
+	Continue             string
 }
 
 // Matches returns true if the given object's labels and fields (as
@@ -86,9 +87,12 @@ func (s *SelectionPredicate) Matches(obj runtime.Object) (bool, error) {
 	if s.Empty() {
 		return true, nil
 	}
-	labels, fields, err := s.GetAttrs(obj)
+	labels, fields, uninitialized, err := s.GetAttrs(obj)
 	if err != nil {
 		return false, err
+	}
+	if !s.IncludeUninitialized && uninitialized {
+		return false, nil
 	}
 	matched := s.Label.Matches(labels)
 	if matched && s.Field != nil {
@@ -99,7 +103,10 @@ func (s *SelectionPredicate) Matches(obj runtime.Object) (bool, error) {
 
 // MatchesObjectAttributes returns true if the given labels and fields
 // match s.Label and s.Field.
-func (s *SelectionPredicate) MatchesObjectAttributes(l labels.Set, f fields.Set) bool {
+func (s *SelectionPredicate) MatchesObjectAttributes(l labels.Set, f fields.Set, uninitialized bool) bool {
+	if !s.IncludeUninitialized && uninitialized {
+		return false
+	}
 	if s.Label.Empty() && s.Field.Empty() {
 		return true
 	}
@@ -139,5 +146,5 @@ func (s *SelectionPredicate) MatcherIndex() []MatchValue {
 
 // Empty returns true if the predicate performs no filtering.
 func (s *SelectionPredicate) Empty() bool {
-	return s.Label.Empty() && s.Field.Empty()
+	return s.Label.Empty() && s.Field.Empty() && s.IncludeUninitialized
 }

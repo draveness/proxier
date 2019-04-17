@@ -12,6 +12,6 @@ func newPodLabel(proxier *maegusv1.Proxier) (map[string]string, error) {
 	}
 
 	return map[string]string{
-		maegusv1.ProxierNameLabel: key,
+		maegusv1.ProxierKeyLabel: key,
 	}, nil
 }

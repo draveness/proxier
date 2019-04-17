@@ -17,8 +17,6 @@ limitations under the License.
 package features
 
 import (
-	"k8s.io/apimachinery/pkg/util/runtime"
-
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 )
 
@@ -39,7 +37,6 @@ const (
 
 	// owner: @tallclair
 	// alpha: v1.10
-	// beta: v1.14
 	//
 	// ValidateProxyRedirects controls whether the apiserver should validate that redirects are only
 	// followed to the same host. Only used if StreamingProxyRedirects is enabled.
@@ -69,6 +66,13 @@ const (
 	APIResponseCompression utilfeature.Feature = "APIResponseCompression"
 
 	// owner: @smarterclayton
+	// alpha: v1.7
+	//
+	// Allow asynchronous coordination of object creation.
+	// Auto-enabled by the Initializers admission plugin.
+	Initializers utilfeature.Feature = "Initializers"
+
+	// owner: @smarterclayton
 	// alpha: v1.8
 	// beta: v1.9
 	//
@@ -84,35 +88,10 @@ const (
 	// validation, merging, mutation can be tested without
 	// committing.
 	DryRun utilfeature.Feature = "DryRun"
-
-	// owner: @apelisse, @lavalamp
-	// alpha: v1.14
-	//
-	// Server-side apply. Merging happens on the server.
-	ServerSideApply utilfeature.Feature = "ServerSideApply"
-
-	// owner: @caesarxuchao
-	// alpha: v1.14
-	//
-	// Allow apiservers to expose the storage version hash in the discovery
-	// document.
-	StorageVersionHash utilfeature.Feature = "StorageVersionHash"
-
-	// owner: @ksubrmnn
-	// alpha: v1.14
-	//
-	// Allows kube-proxy to run in Overlay mode for Windows
-	WinOverlay utilfeature.Feature = "WinOverlay"
-
-	// owner: @ksubrmnn
-	// alpha: v1.14
-	//
-	// Allows kube-proxy to create DSR loadbalancers for Windows
-	WinDSR utilfeature.Feature = "WinDSR"
 )
 
 func init() {
-	runtime.Must(utilfeature.DefaultMutableFeatureGate.Add(defaultKubernetesFeatureGates))
+	utilfeature.DefaultFeatureGate.Add(defaultKubernetesFeatureGates)
 }
 
 // defaultKubernetesFeatureGates consists of all known Kubernetes-specific feature keys.
@@ -120,14 +99,11 @@ func init() {
 // available throughout Kubernetes binaries.
 var defaultKubernetesFeatureGates = map[utilfeature.Feature]utilfeature.FeatureSpec{
 	StreamingProxyRedirects: {Default: true, PreRelease: utilfeature.Beta},
-	ValidateProxyRedirects:  {Default: true, PreRelease: utilfeature.Beta},
+	ValidateProxyRedirects:  {Default: false, PreRelease: utilfeature.Alpha},
 	AdvancedAuditing:        {Default: true, PreRelease: utilfeature.GA},
 	DynamicAuditing:         {Default: false, PreRelease: utilfeature.Alpha},
 	APIResponseCompression:  {Default: false, PreRelease: utilfeature.Alpha},
+	Initializers:            {Default: false, PreRelease: utilfeature.Alpha},
 	APIListChunking:         {Default: true, PreRelease: utilfeature.Beta},
 	DryRun:                  {Default: true, PreRelease: utilfeature.Beta},
-	ServerSideApply:         {Default: false, PreRelease: utilfeature.Alpha},
-	StorageVersionHash:      {Default: false, PreRelease: utilfeature.Alpha},
-	WinOverlay:              {Default: false, PreRelease: utilfeature.Alpha},
-	WinDSR:                  {Default: false, PreRelease: utilfeature.Alpha},
 }

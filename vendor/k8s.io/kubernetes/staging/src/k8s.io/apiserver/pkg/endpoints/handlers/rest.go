@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -72,8 +71,6 @@ type RequestScope struct {
 
 	// HubGroupVersion indicates what version objects read from etcd or incoming requests should be converted to for in-memory handling.
 	HubGroupVersion schema.GroupVersion
-
-	MaxRequestBodyBytes int64
 }
 
 func (scope *RequestScope) err(err error, w http.ResponseWriter, req *http.Request) {
@@ -327,23 +324,9 @@ func summarizeData(data []byte, maxLength int) string {
 	}
 }
 
-func limitedReadBody(req *http.Request, limit int64) ([]byte, error) {
+func readBody(req *http.Request) ([]byte, error) {
 	defer req.Body.Close()
-	if limit <= 0 {
-		return ioutil.ReadAll(req.Body)
-	}
-	lr := &io.LimitedReader{
-		R: req.Body,
-		N: limit + 1,
-	}
-	data, err := ioutil.ReadAll(lr)
-	if err != nil {
-		return nil, err
-	}
-	if lr.N <= 0 {
-		return nil, errors.NewRequestEntityTooLargeError(fmt.Sprintf("limit is %d", limit))
-	}
-	return data, nil
+	return ioutil.ReadAll(req.Body)
 }
 
 func parseTimeout(str string) time.Duration {

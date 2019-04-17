@@ -79,7 +79,7 @@ func createHandler(r rest.NamedCreater, scope RequestScope, admit admission.Inte
 		}
 		decoder := scope.Serializer.DecoderToVersion(s.Serializer, scope.HubGroupVersion)
 
-		body, err := limitedReadBody(req, scope.MaxRequestBodyBytes)
+		body, err := readBody(req)
 		if err != nil {
 			scope.err(err, w, req)
 			return

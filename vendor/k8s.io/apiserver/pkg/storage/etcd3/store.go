@@ -38,9 +38,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/etcd"
-	"k8s.io/apiserver/pkg/storage/etcd/metrics"
 	"k8s.io/apiserver/pkg/storage/value"
-	utiltrace "k8s.io/utils/trace"
+	utiltrace "k8s.io/apiserver/pkg/util/trace"
 )
 
 // authenticatedDataString satisfies the value.Context interface. It uses the key to
@@ -112,9 +111,7 @@ func (s *store) Versioner() storage.Versioner {
 // Get implements storage.Interface.Get.
 func (s *store) Get(ctx context.Context, key string, resourceVersion string, out runtime.Object, ignoreNotFound bool) error {
 	key = path.Join(s.pathPrefix, key)
-	startTime := time.Now()
 	getResp, err := s.client.KV.Get(ctx, key, s.getOps...)
-	metrics.RecordEtcdRequestLatency("get", getTypeName(out), startTime)
 	if err != nil {
 		return err
 	}
@@ -159,13 +156,11 @@ func (s *store) Create(ctx context.Context, key string, obj, out runtime.Object,
 		return storage.NewInternalError(err.Error())
 	}
 
-	startTime := time.Now()
 	txnResp, err := s.client.KV.Txn(ctx).If(
 		notFound(key),
 	).Then(
 		clientv3.OpPut(key, string(newData), opts...),
 	).Commit()
-	metrics.RecordEtcdRequestLatency("create", getTypeName(obj), startTime)
 	if err != nil {
 		return err
 	}
@@ -196,12 +191,10 @@ func (s *store) Delete(ctx context.Context, key string, out runtime.Object, prec
 func (s *store) unconditionalDelete(ctx context.Context, key string, out runtime.Object) error {
 	// We need to do get and delete in single transaction in order to
 	// know the value and revision before deleting it.
-	startTime := time.Now()
 	txnResp, err := s.client.KV.Txn(ctx).If().Then(
 		clientv3.OpGet(key),
 		clientv3.OpDelete(key),
 	).Commit()
-	metrics.RecordEtcdRequestLatency("delete", getTypeName(out), startTime)
 	if err != nil {
 		return err
 	}
@@ -219,9 +212,7 @@ func (s *store) unconditionalDelete(ctx context.Context, key string, out runtime
 }
 
 func (s *store) conditionalDelete(ctx context.Context, key string, out runtime.Object, v reflect.Value, preconditions *storage.Preconditions) error {
-	startTime := time.Now()
 	getResp, err := s.client.KV.Get(ctx, key)
-	metrics.RecordEtcdRequestLatency("get", getTypeName(out), startTime)
 	if err != nil {
 		return err
 	}
@@ -233,7 +224,6 @@ func (s *store) conditionalDelete(ctx context.Context, key string, out runtime.O
 		if err := preconditions.Check(key, origState.obj); err != nil {
 			return err
 		}
-		startTime := time.Now()
 		txnResp, err := s.client.KV.Txn(ctx).If(
 			clientv3.Compare(clientv3.ModRevision(key), "=", origState.rev),
 		).Then(
@@ -241,7 +231,6 @@ func (s *store) conditionalDelete(ctx context.Context, key string, out runtime.O
 		).Else(
 			clientv3.OpGet(key),
 		).Commit()
-		metrics.RecordEtcdRequestLatency("delete", getTypeName(out), startTime)
 		if err != nil {
 			return err
 		}
@@ -258,7 +247,7 @@ func (s *store) conditionalDelete(ctx context.Context, key string, out runtime.O
 func (s *store) GuaranteedUpdate(
 	ctx context.Context, key string, out runtime.Object, ignoreNotFound bool,
 	preconditions *storage.Preconditions, tryUpdate storage.UpdateFunc, suggestion ...runtime.Object) error {
-	trace := utiltrace.New(fmt.Sprintf("GuaranteedUpdate etcd3: %s", getTypeName(out)))
+	trace := utiltrace.New(fmt.Sprintf("GuaranteedUpdate etcd3: %s", reflect.TypeOf(out).String()))
 	defer trace.LogIfLong(500 * time.Millisecond)
 
 	v, err := conversion.EnforcePtr(out)
@@ -268,9 +257,7 @@ func (s *store) GuaranteedUpdate(
 	key = path.Join(s.pathPrefix, key)
 
 	getCurrentState := func() (*objState, error) {
-		startTime := time.Now()
 		getResp, err := s.client.KV.Get(ctx, key, s.getOps...)
-		metrics.RecordEtcdRequestLatency("get", getTypeName(out), startTime)
 		if err != nil {
 			return nil, err
 		}
@@ -352,7 +339,6 @@ func (s *store) GuaranteedUpdate(
 		}
 		trace.Step("Transaction prepared")
 
-		startTime := time.Now()
 		txnResp, err := s.client.KV.Txn(ctx).If(
 			clientv3.Compare(clientv3.ModRevision(key), "=", origState.rev),
 		).Then(
@@ -360,7 +346,6 @@ func (s *store) GuaranteedUpdate(
 		).Else(
 			clientv3.OpGet(key),
 		).Commit()
-		metrics.RecordEtcdRequestLatency("update", getTypeName(out), startTime)
 		if err != nil {
 			return err
 		}
@@ -384,8 +369,6 @@ func (s *store) GuaranteedUpdate(
 
 // GetToList implements storage.Interface.GetToList.
 func (s *store) GetToList(ctx context.Context, key string, resourceVersion string, pred storage.SelectionPredicate, listObj runtime.Object) error {
-	trace := utiltrace.New(fmt.Sprintf("GetToList etcd3: key=%v, resourceVersion=%s, limit: %d, continue: %s", key, resourceVersion, pred.Limit, pred.Continue))
-	defer trace.LogIfLong(500 * time.Millisecond)
 	listPtr, err := meta.GetItemsPtr(listObj)
 	if err != nil {
 		return err
@@ -396,9 +379,7 @@ func (s *store) GetToList(ctx context.Context, key string, resourceVersion strin
 	}
 
 	key = path.Join(s.pathPrefix, key)
-	startTime := time.Now()
 	getResp, err := s.client.KV.Get(ctx, key, s.getOps...)
-	metrics.RecordEtcdRequestLatency("get", getTypeName(listPtr), startTime)
 	if err != nil {
 		return err
 	}
@@ -418,9 +399,7 @@ func (s *store) GetToList(ctx context.Context, key string, resourceVersion strin
 
 func (s *store) Count(key string) (int64, error) {
 	key = path.Join(s.pathPrefix, key)
-	startTime := time.Now()
 	getResp, err := s.client.KV.Get(context.Background(), key, clientv3.WithRange(clientv3.GetPrefixRangeEnd(key)), clientv3.WithCountOnly())
-	metrics.RecordEtcdRequestLatency("listWithCount", key, startTime)
 	if err != nil {
 		return 0, err
 	}
@@ -489,8 +468,6 @@ func encodeContinue(key, keyPrefix string, resourceVersion int64) (string, error
 
 // List implements storage.Interface.List.
 func (s *store) List(ctx context.Context, key, resourceVersion string, pred storage.SelectionPredicate, listObj runtime.Object) error {
-	trace := utiltrace.New(fmt.Sprintf("List etcd3: key=%v, resourceVersion=%s, limit: %d, continue: %s", key, resourceVersion, pred.Limit, pred.Continue))
-	defer trace.LogIfLong(500 * time.Millisecond)
 	listPtr, err := meta.GetItemsPtr(listObj)
 	if err != nil {
 		return err
@@ -577,9 +554,7 @@ func (s *store) List(ctx context.Context, key, resourceVersion string, pred stor
 	var lastKey []byte
 	var hasMore bool
 	for {
-		startTime := time.Now()
 		getResp, err := s.client.KV.Get(ctx, key, options...)
-		metrics.RecordEtcdRequestLatency("list", getTypeName(listPtr), startTime)
 		if err != nil {
 			return interpretListError(err, len(pred.Continue) > 0, continueKey, keyPrefix)
 		}
@@ -810,9 +785,4 @@ func appendListItem(v reflect.Value, data []byte, rev uint64, pred storage.Selec
 
 func notFound(key string) clientv3.Cmp {
 	return clientv3.Compare(clientv3.ModRevision(key), "=", 0)
-}
-
-// getTypeName returns type name of an object for reporting purposes.
-func getTypeName(obj interface{}) string {
-	return reflect.TypeOf(obj).String()
 }

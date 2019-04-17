@@ -92,12 +92,9 @@ func BeforeCreate(strategy RESTCreateStrategy, ctx context.Context, obj runtime.
 		objectMeta.SetName(strategy.GenerateName(objectMeta.GetGenerateName()))
 	}
 
-	// Initializers are a deprecated alpha field and should not be saved
-	objectMeta.SetInitializers(nil)
-
-	// Ensure managedFields is not set unless the feature is enabled
-	if !utilfeature.DefaultFeatureGate.Enabled(features.ServerSideApply) {
-		objectMeta.SetManagedFields(nil)
+	// Ensure Initializers are not set unless the feature is enabled
+	if !utilfeature.DefaultFeatureGate.Enabled(features.Initializers) {
+		objectMeta.SetInitializers(nil)
 	}
 
 	// ClusterName is ignored and should not be saved
@@ -160,7 +157,7 @@ type NamespaceScopedStrategy interface {
 }
 
 // AdmissionToValidateObjectFunc converts validating admission to a rest validate object func
-func AdmissionToValidateObjectFunc(admit admission.Interface, staticAttributes admission.Attributes, o admission.ObjectInterfaces) ValidateObjectFunc {
+func AdmissionToValidateObjectFunc(admit admission.Interface, staticAttributes admission.Attributes) ValidateObjectFunc {
 	validatingAdmission, ok := admit.(admission.ValidationInterface)
 	if !ok {
 		return func(obj runtime.Object) error { return nil }
@@ -181,6 +178,6 @@ func AdmissionToValidateObjectFunc(admit admission.Interface, staticAttributes a
 		if !validatingAdmission.Handles(finalAttributes.GetOperation()) {
 			return nil
 		}
-		return validatingAdmission.Validate(finalAttributes, o)
+		return validatingAdmission.Validate(finalAttributes)
 	}
 }

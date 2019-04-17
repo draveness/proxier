@@ -64,7 +64,7 @@ func UpdateResource(r rest.Updater, scope RequestScope, admit admission.Interfac
 		ctx := req.Context()
 		ctx = request.WithNamespace(ctx, namespace)
 
-		body, err := limitedReadBody(req, scope.MaxRequestBodyBytes)
+		body, err := readBody(req)
 		if err != nil {
 			scope.err(err, w, req)
 			return

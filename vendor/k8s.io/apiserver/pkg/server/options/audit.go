@@ -148,14 +148,9 @@ type AuditWebhookOptions struct {
 	GroupVersionString string
 }
 
-// AuditDynamicOptions control the configuration of dynamic backends for audit events
 type AuditDynamicOptions struct {
 	// Enabled tells whether the dynamic audit capability is enabled.
 	Enabled bool
-
-	// Configuration for batching backend. This is currently only used as an override
-	// for integration tests
-	BatchConfig *pluginbuffered.BatchConfig
 }
 
 func NewAuditOptions() *AuditOptions {
@@ -179,8 +174,7 @@ func NewAuditOptions() *AuditOptions {
 			GroupVersionString: "audit.k8s.io/v1",
 		},
 		DynamicOptions: AuditDynamicOptions{
-			Enabled:     false,
-			BatchConfig: plugindynamic.NewDefaultWebhookBatchConfig(),
+			Enabled: false,
 		},
 	}
 }
@@ -640,7 +634,7 @@ func (o *AuditDynamicOptions) newBackend(
 
 	dc := &plugindynamic.Config{
 		Informer:       informer,
-		BufferedConfig: o.BatchConfig,
+		BufferedConfig: plugindynamic.NewDefaultWebhookBatchConfig(),
 		EventConfig: plugindynamic.EventConfig{
 			Sink: eventSink,
 			Source: corev1.EventSource{

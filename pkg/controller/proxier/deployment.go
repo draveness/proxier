@@ -56,7 +56,7 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 	}
 
 	annotations := map[string]string{}
-	annotations[margusv1.ConfigMapHashAnnotationKey] = computeHash(newConfigMap)
+	annotations[maegusv1.ConfigMapHashAnnotationKey] = computeHash(newConfigMap)
 	deployment.Spec.Template.ObjectMeta.Annotations = annotations
 
 	if err := controllerutil.SetControllerReference(instance, deployment, r.scheme); err != nil {
@@ -150,7 +150,7 @@ func NewDeployment(instance *maegusv1.Proxier) (*appsv1.Deployment, error) {
 		},
 	}
 
-	return &deployment
+	return &deployment, nil
 }
 
 // NewDeploymentName returns deployment name for specific proxier.
