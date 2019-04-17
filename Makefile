@@ -16,7 +16,7 @@ OPERATOR_E2E_IMAGE_NAME:=draveness/proxier-e2e:$(OPERATOR_E2E_IMAGE_TAG)
 
 .PHONY: test
 test:
-	go test -count=1 ./...
+	go test -count=1 ./pkg/...
 
 e2e:
 	./hack/docker_image_exists.sh || \
