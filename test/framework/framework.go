@@ -9,6 +9,7 @@ import (
 	maegusclient "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -20,11 +21,12 @@ import (
 )
 
 type Framework struct {
-	KubeClient     kubernetes.Interface
-	MaegusClientV1 maegusclient.MaegusV1Interface
-	HTTPClient     *http.Client
-	MasterHost     string
-	DefaultTimeout time.Duration
+	KubeClient            kubernetes.Interface
+	MaegusClientV1        maegusclient.MaegusV1Interface
+	ApiextensionsClientV1 clientset.Interface
+	HTTPClient            *http.Client
+	MasterHost            string
+	DefaultTimeout        time.Duration
 }
 
 // New setups a test framework and returns it.
@@ -44,17 +46,23 @@ func New(kubeconfig, opImage string) (*Framework, error) {
 		return nil, errors.Wrap(err, "creating http-client failed")
 	}
 
-	mClientV1, err := maegusclient.NewForConfig(config)
+	maegusClientV1, err := maegusclient.NewForConfig(config)
 	if err != nil {
 		return nil, errors.Wrap(err, "creating v1 maegus client failed")
 	}
 
+	apiextensionsClientV1, err := clientset.NewForConfig(config)
+	if err != nil {
+		return nil, errors.Wrap(err, "creating v1 apiextensions client failed")
+	}
+
 	f := &Framework{
-		MasterHost:     config.Host,
-		MaegusClientV1: mClientV1,
-		KubeClient:     cli,
-		HTTPClient:     httpc,
-		DefaultTimeout: time.Minute,
+		MasterHost:            config.Host,
+		MaegusClientV1:        maegusClientV1,
+		ApiextensionsClientV1: apiextensionsClientV1,
+		KubeClient:            cli,
+		HTTPClient:            httpc,
+		DefaultTimeout:        time.Minute,
 	}
 
 	return f, nil
@@ -63,7 +71,16 @@ func New(kubeconfig, opImage string) (*Framework, error) {
 // CreateProxierOperator create service account, cluster role, cluster role binding and make
 // deployment for proxier resources.
 func (f *Framework) CreateProxierOperator(namespace string, operatorImage string, namespacesToWatch []string) error {
-	_, err := CreateServiceAccount(f.KubeClient, namespace, "../../deploy/service_account.yaml")
+	crd, err := MakeCRD("../../deploy/margus_v1_proxier_crd.yaml")
+	if err != nil {
+		return err
+	}
+
+	if err := CreateCRD(f.ApiextensionsClientV1, namespace, crd); err != nil && !apierrors.IsAlreadyExists(err) {
+		return errors.Wrap(err, "failed to create proxier crd")
+	}
+
+	_, err = CreateServiceAccount(f.KubeClient, namespace, "../../deploy/service_account.yaml")
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return errors.Wrap(err, "failed to create proxier operator service account")
 	}
