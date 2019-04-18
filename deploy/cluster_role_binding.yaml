@@ -5,6 +5,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: proxier
+  namespace: default
 roleRef:
   kind: ClusterRole
   name: proxier
