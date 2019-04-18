@@ -19,6 +19,6 @@ func TestNewPodLabel(t *testing.T) {
 	labels, err := newPodLabel(proxier)
 	assert.Nil(t, err)
 	assert.Equal(t, map[string]string{
-		maegusv1.ProxierKeyLabel: "default/test",
+		maegusv1.ProxierKeyLabel: "test.default",
 	}, labels)
 }
