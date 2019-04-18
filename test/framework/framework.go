@@ -60,6 +60,8 @@ func New(kubeconfig, opImage string) (*Framework, error) {
 	return f, nil
 }
 
+// CreateProxierOperator create service account, cluster role, cluster role binding and make
+// deployment for proxier resources.
 func (f *Framework) CreateProxierOperator(namespace string, operatorImage string, namespacesToWatch []string) error {
 	_, err := CreateServiceAccount(f.KubeClient, namespace, "../../deploy/service_account.yaml")
 	if err != nil && !apierrors.IsAlreadyExists(err) {
