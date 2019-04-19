@@ -32,7 +32,7 @@ func CreateCRD(kubeClient clientset.Interface, namespace string, crd *apiextensi
 	crd.Namespace = namespace
 	crd, err := kubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("failed to create crd %s", crd.Name))
+		return err
 	}
 	return nil
 }

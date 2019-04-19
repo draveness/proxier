@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	operatorFramework "github.com/draveness/proxier/test/framework"
+	"github.com/draveness/proxier/test/framework"
 	"github.com/stretchr/testify/suite"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	framework     *operatorFramework.Framework
+	f             *framework.Framework
 	operatorImage *string
 )
 
@@ -36,7 +36,7 @@ func TestMain(m *testing.M) {
 		exitCode int
 	)
 
-	if framework, err = operatorFramework.New(*kubeconfig, *operatorImage); err != nil {
+	if f, err = framework.New(*kubeconfig, *operatorImage); err != nil {
 		log.Printf("failed to setup framework: %v\n", err)
 		os.Exit(1)
 	}
@@ -47,12 +47,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAllNS(t *testing.T) {
-	ctx := framework.NewTestCtx(t)
+	ctx := f.NewTestCtx(t)
 	defer ctx.Cleanup(t)
 
-	ns := ctx.CreateNamespace(t, framework.KubeClient)
+	ns := ctx.CreateNamespace(t, f.KubeClient)
 
-	err := framework.CreateProxierOperator(ns, *operatorImage, nil)
+	err := f.CreateProxierOperator(ns, *operatorImage, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,14 +69,14 @@ func TestAllNS(t *testing.T) {
 		"name": "proxier-operator",
 	})).String()}
 
-	pl, err := framework.KubeClient.CoreV1().Pods(ns).List(opts)
+	pl, err := f.KubeClient.CoreV1().Pods(ns).List(opts)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if expected := 1; len(pl.Items) != expected {
 		t.Fatalf("expected %v Proxier Operator pods, but got %v", expected, len(pl.Items))
 	}
-	restarts, err := framework.GetPodRestartCount(ns, pl.Items[0].GetName())
+	restarts, err := f.GetPodRestartCount(ns, pl.Items[0].GetName())
 	if err != nil {
 		t.Fatalf("failed to retrieve restart count of Proxier Operator pod: %v", err)
 	}
