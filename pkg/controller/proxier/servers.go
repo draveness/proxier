@@ -13,52 +13,13 @@ import (
 )
 
 func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
+	servicesToCreate, _ := groupServers(instance, []*corev1.Service{})
+
 	backendsCount := len(instance.Spec.Backends)
-
-	proxierPorts := []corev1.ServicePort{}
-	for _, port := range instance.Spec.Ports {
-		proxierPorts = append(proxierPorts, corev1.ServicePort{
-			Name:       port.Name,
-			Protocol:   corev1.Protocol(port.Protocol),
-			Port:       port.Port,
-			TargetPort: port.TargetPort,
-		})
-	}
-
-	// TODO: delete useless servers
-	services := []corev1.Service{}
-	for _, backend := range instance.Spec.Backends {
-		backendSelector := map[string]string{}
-		for key, value := range instance.Spec.Selector {
-			backendSelector[key] = value
-		}
-		for key, value := range backend.Selector {
-			backendSelector[key] = value
-		}
-
-		service := corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("%s-%s-backend", instance.Name, backend.Name),
-				Namespace: instance.Namespace,
-				Labels: map[string]string{
-					"maegus.com/proxier-name": instance.Name,
-				},
-			},
-			Spec: corev1.ServiceSpec{
-				Selector: backendSelector,
-				Type:     corev1.ServiceTypeClusterIP,
-				Ports:    proxierPorts,
-			},
-		}
-
-		services = append(services, service)
-	}
-
 	errCh := make(chan error, backendsCount)
-
-	for i := range services {
-		service := services[i]
-		if err := controllerutil.SetControllerReference(instance, &service, r.scheme); err != nil {
+	for i := range servicesToCreate {
+		service := servicesToCreate[i]
+		if err := controllerutil.SetControllerReference(instance, service, r.scheme); err != nil {
 			errCh <- err
 			break
 		}
