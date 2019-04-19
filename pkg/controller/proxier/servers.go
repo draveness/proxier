@@ -64,9 +64,9 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 		}
 
 		found := &corev1.Service{}
-		err := r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
+		err := r.client.Get(context.Background(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
-			err = r.client.Create(context.TODO(), &service)
+			err = r.client.Create(context.Background(), &service)
 			if err != nil {
 				errCh <- err
 			}
@@ -80,7 +80,7 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 		found.Spec.Ports = service.Spec.Ports
 		found.Spec.Selector = service.Spec.Selector
 
-		err = r.client.Update(context.TODO(), found)
+		err = r.client.Update(context.Background(), found)
 		if err != nil {
 			errCh <- err
 			break
