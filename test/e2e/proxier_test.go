@@ -20,7 +20,7 @@ func (suite *ProxierCreateSuite) TestProxierCreateBackends() {
 
 	suite.T().Parallel()
 
-	exampleProxier := framework.MakeBasicProxier(namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
+	exampleProxier := MakeBasicProxier(namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
 
 	_, err := framework.CreateProxierAndWaitUntilReady(namespace, exampleProxier)
 
@@ -43,7 +43,7 @@ func (suite *ProxierCreateSuite) TestProxierCreateNginxDeployment() {
 
 	suite.T().Parallel()
 
-	exampleProxier := framework.MakeBasicProxier(namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
+	exampleProxier := MakeBasicProxier(namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
 
 	_, err := framework.CreateProxierAndWaitUntilReady(namespace, exampleProxier)
 	assert.Nil(suite.T(), err, "create proxier error")
@@ -65,7 +65,7 @@ func (suite *ProxierCreateSuite) TestProxierCreateService() {
 
 	suite.T().Parallel()
 
-	exampleProxier := framework.MakeBasicProxier(namespace, "echo", []string{"v1", "v2"}, []int32{100, 10})
+	exampleProxier := MakeBasicProxier(namespace, "echo", []string{"v1", "v2"}, []int32{100, 10})
 
 	_, err := framework.CreateProxierAndWaitUntilReady(namespace, exampleProxier)
 	assert.Nil(suite.T(), err, "create proxier error")

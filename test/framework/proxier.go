@@ -12,7 +12,7 @@ import (
 )
 
 // MakeBasicProxier returns a proxier with given versions and weights.
-func (f *Framework) MakeBasicProxier(ns, name string, versions []string, weights []int32) *maegusv1.Proxier {
+func MakeBasicProxier(ns, name string, versions []string, weights []int32) *maegusv1.Proxier {
 	backends := []maegusv1.BackendSpec{}
 	for i := range versions {
 		backends = append(backends, maegusv1.BackendSpec{
