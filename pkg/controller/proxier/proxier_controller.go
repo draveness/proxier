@@ -96,7 +96,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 
 	// Fetch the Proxier instance
 	instance := &maegusv1.Proxier{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	err := r.client.Get(context.Background(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -124,7 +124,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 	}
 
 	instance.Status.Phase = maegusv1.ProxierRunning
-	err = r.client.Status().Update(context.TODO(), instance)
+	err = r.client.Status().Update(context.Background(), instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -134,7 +134,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 
 func (r *ReconcileProxier) updateProxierStatus(instance *maegusv1.Proxier, proxierStatus *maegusv1.ProxierStatus) error {
 	instance.Status = *proxierStatus
-	return r.client.Status().Update(context.TODO(), instance)
+	return r.client.Status().Update(context.Background(), instance)
 }
 
 func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
@@ -151,9 +151,9 @@ func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 
 	// Check if this Service already exists
 	found := &corev1.Service{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
+	err = r.client.Get(context.Background(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		err = r.client.Create(context.TODO(), service)
+		err = r.client.Create(context.Background(), service)
 		if err != nil {
 			return err
 		}
@@ -167,7 +167,7 @@ func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 	found.Spec.Ports = service.Spec.Ports
 	found.Spec.Selector = service.Spec.Selector
 
-	err = r.client.Update(context.TODO(), found)
+	err = r.client.Update(context.Background(), found)
 	if err != nil {
 		return err
 	}

@@ -30,9 +30,9 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 	}
 
 	foundConfigMap := &corev1.ConfigMap{}
-	err := r.client.Get(context.TODO(), types.NamespacedName{Name: newConfigMap.Name, Namespace: newConfigMap.Namespace}, foundConfigMap)
+	err := r.client.Get(context.Background(), types.NamespacedName{Name: newConfigMap.Name, Namespace: newConfigMap.Namespace}, foundConfigMap)
 	if err != nil && errors.IsNotFound(err) {
-		err = r.client.Create(context.TODO(), newConfigMap)
+		err = r.client.Create(context.Background(), newConfigMap)
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 
 	foundConfigMap.Data = newConfigMap.Data
 
-	err = r.client.Update(context.TODO(), foundConfigMap)
+	err = r.client.Update(context.Background(), foundConfigMap)
 	if err != nil {
 		return err
 	}
@@ -65,9 +65,9 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 
 	// Check if this Deployment already exists
 	foundDeployment := &appsv1.Deployment{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: deployment.Name, Namespace: deployment.Namespace}, foundDeployment)
+	err = r.client.Get(context.Background(), types.NamespacedName{Name: deployment.Name, Namespace: deployment.Namespace}, foundDeployment)
 	if err != nil && errors.IsNotFound(err) {
-		err = r.client.Create(context.TODO(), deployment)
+		err = r.client.Create(context.Background(), deployment)
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 
 	foundDeployment.Spec.Template = deployment.Spec.Template
 
-	err = r.client.Update(context.TODO(), foundDeployment)
+	err = r.client.Update(context.Background(), foundDeployment)
 	if err != nil {
 		return err
 	}
