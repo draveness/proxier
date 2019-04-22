@@ -49,7 +49,21 @@ func MakeBasicProxier(ns, name string, versions []string, weights []int32) *maeg
 func (f *Framework) CreateProxierAndWaitUntilReady(ns string, p *maegusv1.Proxier) (*maegusv1.Proxier, error) {
 	result, err := f.MaegusClientV1.Proxiers(ns).Create(p)
 	if err != nil {
-		return nil, fmt.Errorf("creating roxier instances failed (%v): %v", p.Name, err)
+		return nil, fmt.Errorf("creating proxier instances failed (%v): %v", p.Name, err)
+	}
+
+	if err := f.WaitForProxierReady(result, 15*time.Second); err != nil {
+		return nil, fmt.Errorf("waiting for Proxier instances timed out (%v): %v", p.Name, err)
+	}
+
+	return result, nil
+}
+
+// UpdateProxierAndWaitUntilReady creates a proxier instance and waits until ready.
+func (f *Framework) UpdateProxierAndWaitUntilReady(ns string, p *maegusv1.Proxier) (*maegusv1.Proxier, error) {
+	result, err := f.MaegusClientV1.Proxiers(ns).Update(p)
+	if err != nil {
+		return nil, fmt.Errorf("updating proxier instances failed (%v): %v", p.Name, err)
 	}
 
 	if err := f.WaitForProxierReady(result, 15*time.Second); err != nil {
