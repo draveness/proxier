@@ -36,7 +36,7 @@ spec:
 ## Installation
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/draveness/proxier/master/deploy/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/draveness/proxier/master/deploy/proxier.yaml
 ```
 
 ## Usage
