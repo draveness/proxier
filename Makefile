@@ -4,10 +4,10 @@ FIRST_GOPATH:=$(firstword $(subst :, ,$(shell go env GOPATH)))
 GO_PKG=github.com/draveness/proxier
 K8S_GEN_BINARIES:=deepcopy-gen informer-gen lister-gen client-gen
 
-TYPES_V1_TARGET:=pkg/apis/maegus/v1/proxier_types.go
+TYPES_V1BETA1_TARGET:=pkg/apis/maegus/v1beta1/proxier_types.go
 
 K8S_GEN_DEPS:=.header
-K8S_GEN_DEPS+=$(TYPES_V1_TARGET)
+K8S_GEN_DEPS+=$(TYPES_V1BETA1_TARGET)
 K8S_GEN_DEPS+=$(foreach bin,$(K8S_GEN_BINARIES),$(FIRST_GOPATH)/bin/$(bin))
 K8S_GEN_DEPS+=$(OPENAPI_GEN_BINARY)
 
@@ -26,11 +26,11 @@ e2e:
 start:
 	operator-sdk up local --namespace=default
 
-LISTER_TARGET := pkg/client/listers/maegus/v1/proxier.go
+LISTER_TARGET := pkg/client/listers/maegus/v1beta1/proxier.go
 $(LISTER_TARGET): $(K8S_GEN_DEPS)
 	$(LISTER_GEN_BINARY) \
 	$(K8S_GEN_ARGS) \
-	--input-dirs     "$(GO_PKG)/pkg/apis/maegus/v1" \
+	--input-dirs     "$(GO_PKG)/pkg/apis/maegus/v1beta1" \
 	--output-package "$(GO_PKG)/pkg/client/listers"
 
 CLIENT_TARGET := pkg/client/versioned/clientset.go
@@ -39,16 +39,16 @@ $(CLIENT_TARGET): $(K8S_GEN_DEPS)
 	$(K8S_GEN_ARGS) \
 	--input-base     "" \
 	--clientset-name "versioned" \
-	--input	         "$(GO_PKG)/pkg/apis/maegus/v1" \
+	--input	         "$(GO_PKG)/pkg/apis/maegus/v1beta1" \
 	--output-package "$(GO_PKG)/pkg/client"
 
-INFORMER_TARGET := pkg/client/informers/externalversions/maegus/v1/prixier.go
+INFORMER_TARGET := pkg/client/informers/externalversions/maegus/v1beta1/proxier.go
 $(INFORMER_TARGET): $(K8S_GEN_DEPS) $(LISTER_TARGET) $(CLIENT_TARGET)
 	$(INFORMER_GEN_BINARY) \
 	$(K8S_GEN_ARGS) \
 	--versioned-clientset-package "$(GO_PKG)/pkg/client/versioned" \
 	--listers-package "$(GO_PKG)/pkg/client/listers" \
-	--input-dirs      "$(GO_PKG)/pkg/apis/maegus/v1" \
+	--input-dirs      "$(GO_PKG)/pkg/apis/maegus/v1beta1" \
 	--output-package  "$(GO_PKG)/pkg/client/informers"
 
 .PHONY: k8s-gen

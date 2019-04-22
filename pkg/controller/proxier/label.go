@@ -3,7 +3,7 @@ package proxier
 import (
 	"fmt"
 
-	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 )
 
 func newPodLabel(proxier *maegusv1.Proxier) (map[string]string, error) {

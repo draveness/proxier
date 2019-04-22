@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

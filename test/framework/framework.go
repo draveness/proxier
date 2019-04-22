@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	maegusclient "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1"
+	maegusclient "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1beta1"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -22,7 +22,7 @@ import (
 
 type Framework struct {
 	KubeClient            kubernetes.Interface
-	MaegusClientV1        maegusclient.MaegusV1Interface
+	MaegusClientV1        maegusclient.MaegusV1beta1Interface
 	ApiextensionsClientV1 clientset.Interface
 	HTTPClient            *http.Client
 	MasterHost            string

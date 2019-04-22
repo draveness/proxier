@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/draveness/proxier/pkg/client/versioned"
-	maegusv1 "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1"
-	fakemaegusv1 "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1/fake"
+	maegusv1beta1 "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1beta1"
+	fakemaegusv1beta1 "github.com/draveness/proxier/pkg/client/versioned/typed/maegus/v1beta1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -71,7 +71,7 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 
 var _ clientset.Interface = &Clientset{}
 
-// MaegusV1 retrieves the MaegusV1Client
-func (c *Clientset) MaegusV1() maegusv1.MaegusV1Interface {
-	return &fakemaegusv1.FakeMaegusV1{Fake: &c.Fake}
+// MaegusV1beta1 retrieves the MaegusV1beta1Client
+func (c *Clientset) MaegusV1beta1() maegusv1beta1.MaegusV1beta1Interface {
+	return &fakemaegusv1beta1.FakeMaegusV1beta1{Fake: &c.Fake}
 }

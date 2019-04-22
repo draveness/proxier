@@ -3,7 +3,7 @@ package proxier
 import (
 	"testing"
 
-	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 
 	"github.com/draveness/proxier/test/framework"
 	"github.com/stretchr/testify/assert"

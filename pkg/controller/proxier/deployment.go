@@ -3,7 +3,7 @@ package proxier
 import (
 	"context"
 
-	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 	"github.com/draveness/proxier/pkg/controller/proxier/nginx"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

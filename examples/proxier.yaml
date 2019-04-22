@@ -1,4 +1,4 @@
-apiVersion: maegus.com/v1
+apiVersion: maegus.com/v1beta1
 kind: Proxier
 metadata:
   name: example-proxier

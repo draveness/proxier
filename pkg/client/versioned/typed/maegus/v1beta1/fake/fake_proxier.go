@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
+	v1beta1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,29 +30,29 @@ import (
 
 // FakeProxiers implements ProxierInterface
 type FakeProxiers struct {
-	Fake *FakeMaegusV1
+	Fake *FakeMaegusV1beta1
 	ns   string
 }
 
-var proxiersResource = schema.GroupVersionResource{Group: "maegus.com", Version: "v1", Resource: "proxiers"}
+var proxiersResource = schema.GroupVersionResource{Group: "maegus.com", Version: "v1beta1", Resource: "proxiers"}
 
-var proxiersKind = schema.GroupVersionKind{Group: "maegus.com", Version: "v1", Kind: "Proxier"}
+var proxiersKind = schema.GroupVersionKind{Group: "maegus.com", Version: "v1beta1", Kind: "Proxier"}
 
 // Get takes name of the proxier, and returns the corresponding proxier object, and an error if there is any.
-func (c *FakeProxiers) Get(name string, options v1.GetOptions) (result *maegusv1.Proxier, err error) {
+func (c *FakeProxiers) Get(name string, options v1.GetOptions) (result *v1beta1.Proxier, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(proxiersResource, c.ns, name), &maegusv1.Proxier{})
+		Invokes(testing.NewGetAction(proxiersResource, c.ns, name), &v1beta1.Proxier{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*maegusv1.Proxier), err
+	return obj.(*v1beta1.Proxier), err
 }
 
 // List takes label and field selectors, and returns the list of Proxiers that match those selectors.
-func (c *FakeProxiers) List(opts v1.ListOptions) (result *maegusv1.ProxierList, err error) {
+func (c *FakeProxiers) List(opts v1.ListOptions) (result *v1beta1.ProxierList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(proxiersResource, proxiersKind, c.ns, opts), &maegusv1.ProxierList{})
+		Invokes(testing.NewListAction(proxiersResource, proxiersKind, c.ns, opts), &v1beta1.ProxierList{})
 
 	if obj == nil {
 		return nil, err
@@ -62,8 +62,8 @@ func (c *FakeProxiers) List(opts v1.ListOptions) (result *maegusv1.ProxierList, 
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &maegusv1.ProxierList{ListMeta: obj.(*maegusv1.ProxierList).ListMeta}
-	for _, item := range obj.(*maegusv1.ProxierList).Items {
+	list := &v1beta1.ProxierList{ListMeta: obj.(*v1beta1.ProxierList).ListMeta}
+	for _, item := range obj.(*v1beta1.ProxierList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -79,43 +79,43 @@ func (c *FakeProxiers) Watch(opts v1.ListOptions) (watch.Interface, error) {
 }
 
 // Create takes the representation of a proxier and creates it.  Returns the server's representation of the proxier, and an error, if there is any.
-func (c *FakeProxiers) Create(proxier *maegusv1.Proxier) (result *maegusv1.Proxier, err error) {
+func (c *FakeProxiers) Create(proxier *v1beta1.Proxier) (result *v1beta1.Proxier, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(proxiersResource, c.ns, proxier), &maegusv1.Proxier{})
+		Invokes(testing.NewCreateAction(proxiersResource, c.ns, proxier), &v1beta1.Proxier{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*maegusv1.Proxier), err
+	return obj.(*v1beta1.Proxier), err
 }
 
 // Update takes the representation of a proxier and updates it. Returns the server's representation of the proxier, and an error, if there is any.
-func (c *FakeProxiers) Update(proxier *maegusv1.Proxier) (result *maegusv1.Proxier, err error) {
+func (c *FakeProxiers) Update(proxier *v1beta1.Proxier) (result *v1beta1.Proxier, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(proxiersResource, c.ns, proxier), &maegusv1.Proxier{})
+		Invokes(testing.NewUpdateAction(proxiersResource, c.ns, proxier), &v1beta1.Proxier{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*maegusv1.Proxier), err
+	return obj.(*v1beta1.Proxier), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeProxiers) UpdateStatus(proxier *maegusv1.Proxier) (*maegusv1.Proxier, error) {
+func (c *FakeProxiers) UpdateStatus(proxier *v1beta1.Proxier) (*v1beta1.Proxier, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(proxiersResource, "status", c.ns, proxier), &maegusv1.Proxier{})
+		Invokes(testing.NewUpdateSubresourceAction(proxiersResource, "status", c.ns, proxier), &v1beta1.Proxier{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*maegusv1.Proxier), err
+	return obj.(*v1beta1.Proxier), err
 }
 
 // Delete takes name of the proxier and deletes it. Returns an error if one occurs.
 func (c *FakeProxiers) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(proxiersResource, c.ns, name), &maegusv1.Proxier{})
+		Invokes(testing.NewDeleteAction(proxiersResource, c.ns, name), &v1beta1.Proxier{})
 
 	return err
 }
@@ -124,17 +124,17 @@ func (c *FakeProxiers) Delete(name string, options *v1.DeleteOptions) error {
 func (c *FakeProxiers) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(proxiersResource, c.ns, listOptions)
 
-	_, err := c.Fake.Invokes(action, &maegusv1.ProxierList{})
+	_, err := c.Fake.Invokes(action, &v1beta1.ProxierList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched proxier.
-func (c *FakeProxiers) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *maegusv1.Proxier, err error) {
+func (c *FakeProxiers) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.Proxier, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(proxiersResource, c.ns, name, pt, data, subresources...), &maegusv1.Proxier{})
+		Invokes(testing.NewPatchSubresourceAction(proxiersResource, c.ns, name, pt, data, subresources...), &v1beta1.Proxier{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*maegusv1.Proxier), err
+	return obj.(*v1beta1.Proxier), err
 }

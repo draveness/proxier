@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 )
 
 type server struct {

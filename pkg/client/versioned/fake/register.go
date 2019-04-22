@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1"
+	maegusv1beta1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,7 +31,7 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 var parameterCodec = runtime.NewParameterCodec(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	maegusv1.AddToScheme,
+	maegusv1beta1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition
