@@ -62,7 +62,7 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 }
 
 func groupServers(instance *maegusv1.Proxier, services []*corev1.Service) ([]*corev1.Service, []*corev1.Service) {
-	// TODO: delete useless servers
+	// TODO: delete useless servers created by proxier
 	servicesToDelete := []*corev1.Service{}
 
 	servicesToCreate := []*corev1.Service{}
