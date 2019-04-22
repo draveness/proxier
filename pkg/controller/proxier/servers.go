@@ -32,7 +32,7 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 		go func(service *corev1.Service) {
 			defer waitGroup.Done()
 			if err := r.client.Delete(context.Background(), service); err != nil {
-				// TODO: handle delete service error
+				// TODO: handle delete service error in sync servers
 			}
 		}(&serviceToDelete)
 	}
