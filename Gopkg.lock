@@ -63,17 +63,6 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:91fb48882bdb6479c511b1d8c07ccf83b84c8c956870fe61daf7e82fe089aa51"
-  name = "github.com/docker/distribution"
-  packages = [
-    "digestset",
-    "reference",
-  ]
-  pruneopts = "NT"
-  revision = "2461543d988979529609e8cb6fca9ca190dc48da"
-  version = "v2.7.1"
-
-[[projects]]
   digest = "1:1302bdd23af4264a095d48c2c28660a8ecf2e02454ce172cef5cb946029a1383"
   name = "github.com/emicklei/go-restful"
   packages = [
@@ -324,14 +313,6 @@
   version = "1.0.1"
 
 [[projects]]
-  digest = "1:e0cc8395ea893c898ff5eb0850f4d9851c1f57c78c232304a026379a47a552d0"
-  name = "github.com/opencontainers/go-digest"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "279bed98673dd5bef374d3b6e4b09e2af76183bf"
-  version = "v1.0.0-rc1"
-
-[[projects]]
   digest = "1:674610d54812d3c36ab7861fc826176bf581a9426cc09abec0107414c17f89cd"
   name = "github.com/operator-framework/operator-sdk"
   packages = [
@@ -503,12 +484,7 @@
   branch = "master"
   digest = "1:98aa4a4a4f424cde92614ade7dac45f66c898e2acb8973f809cf9a424ec625e9"
   name = "golang.org/x/crypto"
-  packages = [
-    "ed25519",
-    "ed25519/internal/edwards25519",
-    "pbkdf2",
-    "ssh/terminal",
-  ]
+  packages = ["ssh/terminal"]
   pruneopts = "NT"
   revision = "88737f569e3a9c7ab309cdc09a07fe7fc87233c3"
 
@@ -640,19 +616,6 @@
   version = "v0.9.1"
 
 [[projects]]
-  digest = "1:126a46acc6f83cd0dab7fd296047c6778d618806db0c85f8c3c8709e68ce8926"
-  name = "gopkg.in/square/go-jose.v2"
-  packages = [
-    ".",
-    "cipher",
-    "json",
-    "jwt",
-  ]
-  pruneopts = "NT"
-  revision = "730df5f748271903322feb182be83b43ebbbe27d"
-  version = "v2.3.1"
-
-[[projects]]
   digest = "1:18108594151654e9e696b27b181b953f9a90b16bf14d253dd1b397b025a1487f"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -708,7 +671,9 @@
   packages = [
     "pkg/apis/apiextensions",
     "pkg/apis/apiextensions/v1beta1",
-    "pkg/features",
+    "pkg/client/clientset/clientset",
+    "pkg/client/clientset/clientset/scheme",
+    "pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
   ]
   pruneopts = "NT"
   revision = "0fe22c71c47604641d9aa352c785b7912c200562"
@@ -718,15 +683,12 @@
   digest = "1:15b5c41ff6faa4d0400557d4112d6337e1abc961c65513d44fce7922e32c9ca7"
   name = "k8s.io/apimachinery"
   packages = [
-    "pkg/api/equality",
     "pkg/api/errors",
     "pkg/api/meta",
     "pkg/api/resource",
-    "pkg/api/validation",
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
-    "pkg/apis/meta/v1/validation",
     "pkg/apis/meta/v1beta1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
@@ -768,20 +730,6 @@
   ]
   pruneopts = "NT"
   revision = "2b1284ed4c93a43499e781493253e2ac5959c4fd"
-  version = "kubernetes-1.13.1"
-
-[[projects]]
-  digest = "1:8b3a74319ec630bd43d61f3d1c13df8e97530c98f7ef444ba41c417a328748b5"
-  name = "k8s.io/apiserver"
-  packages = [
-    "pkg/authentication/authenticator",
-    "pkg/authentication/serviceaccount",
-    "pkg/authentication/user",
-    "pkg/features",
-    "pkg/util/feature",
-  ]
-  pruneopts = "NT"
-  revision = "3ccfe8365421eb08e334b195786a2973460741d8"
   version = "kubernetes-1.13.1"
 
 [[projects]]
@@ -848,7 +796,6 @@
     "tools/pager",
     "tools/record",
     "tools/reference",
-    "tools/watch",
     "transport",
     "util/buffer",
     "util/cert",
@@ -938,45 +885,9 @@
 [[projects]]
   digest = "1:7ba08926bb3200bcac7122822f34c78f653243c4d9c04569d71bf5d27dfb943b"
   name = "k8s.io/kubernetes"
-  packages = [
-    "pkg/api/legacyscheme",
-    "pkg/api/service",
-    "pkg/api/v1/pod",
-    "pkg/apis/apps",
-    "pkg/apis/autoscaling",
-    "pkg/apis/core",
-    "pkg/apis/core/helper",
-    "pkg/apis/core/install",
-    "pkg/apis/core/pods",
-    "pkg/apis/core/v1",
-    "pkg/apis/core/v1/helper",
-    "pkg/apis/core/validation",
-    "pkg/apis/scheduling",
-    "pkg/capabilities",
-    "pkg/controller",
-    "pkg/features",
-    "pkg/fieldpath",
-    "pkg/kubelet/types",
-    "pkg/master/ports",
-    "pkg/scheduler/api",
-    "pkg/security/apparmor",
-    "pkg/serviceaccount",
-    "pkg/util/file",
-    "pkg/util/hash",
-    "pkg/util/net/sets",
-    "pkg/util/parsers",
-    "pkg/util/taints",
-  ]
+  packages = ["pkg/util/hash"]
   pruneopts = "NT"
   revision = "c6d339953bd4fd8c021a6b5fb46d7952b30be9f9"
-
-[[projects]]
-  branch = "master"
-  digest = "1:31548b329da724707853e197eaa60861e5cdad83fa42778196c2ff6f58e91685"
-  name = "k8s.io/utils"
-  packages = ["pointer"]
-  pruneopts = "NT"
-  revision = "21c4ce38f2a793ec01e925ddc31216500183b773"
 
 [[projects]]
   digest = "1:06035489efbd51ccface65fc878ceeb849aba05b2f9443c8993f363fc96e80ac"
@@ -1058,6 +969,8 @@
     "k8s.io/api/apps/v1beta2",
     "k8s.io/api/core/v1",
     "k8s.io/api/rbac/v1",
+    "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
+    "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/fields",
@@ -1090,7 +1003,6 @@
     "k8s.io/gengo/args",
     "k8s.io/kube-openapi/cmd/openapi-gen",
     "k8s.io/kube-openapi/pkg/common",
-    "k8s.io/kubernetes/pkg/controller",
     "k8s.io/kubernetes/pkg/util/hash",
     "sigs.k8s.io/controller-runtime/pkg/client",
     "sigs.k8s.io/controller-runtime/pkg/client/config",
