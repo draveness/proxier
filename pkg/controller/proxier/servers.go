@@ -10,11 +10,20 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
-	servicesToCreate, servicesToDelete := groupServers(instance, []*corev1.Service{})
+	var serviceList corev1.ServiceList
+	if err := r.client.List(context.Background(), client.MatchingLabels(map[string]string{
+		// TODO: use const for proxier name key in service
+		"maegus.com/proxier-name": instance.Name,
+	}), &serviceList); err != nil {
+		return err
+	}
+
+	servicesToCreate, servicesToDelete := groupServers(instance, serviceList.Items)
 
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(len(servicesToDelete))
@@ -25,14 +34,14 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 			if err := r.client.Delete(context.Background(), service); err != nil {
 				// TODO: handle delete service error
 			}
-		}(serviceToDelete)
+		}(&serviceToDelete)
 	}
 	waitGroup.Wait()
 
 	createErrCh := make(chan error, len(servicesToCreate))
 	for i := range servicesToCreate {
 		serviceToCreate := servicesToCreate[i]
-		if err := controllerutil.SetControllerReference(instance, serviceToCreate, r.scheme); err != nil {
+		if err := controllerutil.SetControllerReference(instance, &serviceToCreate, r.scheme); err != nil {
 			createErrCh <- err
 			break
 		}
@@ -40,7 +49,7 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 		found := &corev1.Service{}
 		err := r.client.Get(context.Background(), types.NamespacedName{Name: serviceToCreate.Name, Namespace: serviceToCreate.Namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
-			err = r.client.Create(context.Background(), serviceToCreate)
+			err = r.client.Create(context.Background(), &serviceToCreate)
 			if err != nil {
 				createErrCh <- err
 			}
@@ -74,8 +83,8 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 	return nil
 }
 
-func groupServers(instance *maegusv1.Proxier, services []*corev1.Service) ([]*corev1.Service, []*corev1.Service) {
-	servicesToCreate := []*corev1.Service{}
+func groupServers(instance *maegusv1.Proxier, services []corev1.Service) ([]corev1.Service, []corev1.Service) {
+	servicesToCreate := []corev1.Service{}
 
 	proxierPorts := []corev1.ServicePort{}
 	for _, port := range instance.Spec.Ports {
@@ -96,7 +105,7 @@ func groupServers(instance *maegusv1.Proxier, services []*corev1.Service) ([]*co
 			backendSelector[key] = value
 		}
 
-		serviceToCreate := &corev1.Service{
+		serviceToCreate := corev1.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-backend", instance.Name, backend.Name),
 				Namespace: instance.Namespace,
@@ -114,23 +123,23 @@ func groupServers(instance *maegusv1.Proxier, services []*corev1.Service) ([]*co
 		servicesToCreate = append(servicesToCreate, serviceToCreate)
 	}
 
-	servicesToDelete := []*corev1.Service{}
+	servicesToDelete := []corev1.Service{}
 
 	for i := range services {
-		serviceToCreate := services[i]
+		service := services[i]
 		found := false
 
 		for j := range servicesToCreate {
 			serviceToCreate := servicesToCreate[j]
-			if serviceToCreate.Name == serviceToCreate.Name &&
-				serviceToCreate.Namespace == serviceToCreate.Namespace {
+			if serviceToCreate.Name == service.Name &&
+				serviceToCreate.Namespace == service.Namespace {
 				found = true
 				break
 			}
 		}
 
 		if !found {
-			servicesToDelete = append(servicesToDelete, serviceToCreate)
+			servicesToDelete = append(servicesToDelete, service)
 		}
 	}
 

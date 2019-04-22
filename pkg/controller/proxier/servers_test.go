@@ -14,7 +14,7 @@ import (
 func TestGroupServers(t *testing.T) {
 	instance := framework.MakeBasicProxier("default", "group-server", []string{"v2", "v3"}, []int32{10, 20})
 
-	existingServices := []*corev1.Service{
+	existingServices := []corev1.Service{
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "group-server-v1-backend",
@@ -65,7 +65,7 @@ func TestGroupServers(t *testing.T) {
 
 	servicesToCreate, servicesToDelete := groupServers(instance, existingServices)
 
-	assert.Equal(t, []*corev1.Service{
+	assert.Equal(t, []corev1.Service{
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "group-server-v1-backend",
@@ -90,7 +90,7 @@ func TestGroupServers(t *testing.T) {
 			},
 		},
 	}, servicesToDelete)
-	assert.Equal(t, []*corev1.Service{
+	assert.Equal(t, []corev1.Service{
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "group-server-v2-backend",

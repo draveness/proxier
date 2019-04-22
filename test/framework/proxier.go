@@ -66,9 +66,8 @@ func (f *Framework) UpdateProxierAndWaitUntilReady(ns string, p *maegusv1.Proxie
 		return nil, fmt.Errorf("updating proxier instances failed (%v): %v", p.Name, err)
 	}
 
-	if err := f.WaitForProxierReady(result, 15*time.Second); err != nil {
-		return nil, fmt.Errorf("waiting for Proxier instances timed out (%v): %v", p.Name, err)
-	}
+	// TODO: update proxier status with svc count
+	time.Sleep(15 * time.Second)
 
 	return result, nil
 }
