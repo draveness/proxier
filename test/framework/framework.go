@@ -71,7 +71,7 @@ func New(kubeconfig, opImage string) (*Framework, error) {
 // CreateProxierOperator create service account, cluster role, cluster role binding and make
 // deployment for proxier resources.
 func (f *Framework) CreateProxierOperator(namespace string, operatorImage string, namespacesToWatch []string) error {
-	crd, err := MakeCRD("../../deploy/margus_v1_proxier_crd.yaml")
+	crd, err := MakeCRD("../../deploy/crds/maegus_v1beta1_proxier_crd.yaml")
 	if err != nil {
 		return err
 	}
