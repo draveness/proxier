@@ -39,37 +39,41 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 	waitGroup.Wait()
 
 	createErrCh := make(chan error, len(servicesToCreate))
+	waitGroup.Add(len(servicesToCreate))
 	for i := range servicesToCreate {
 		serviceToCreate := servicesToCreate[i]
-		if err := controllerutil.SetControllerReference(instance, &serviceToCreate, r.scheme); err != nil {
-			createErrCh <- err
-			break
-		}
+		go func(service *corev1.Service) {
+			defer waitGroup.Done()
+			if err := controllerutil.SetControllerReference(instance, service, r.scheme); err != nil {
+				createErrCh <- err
+				return
+			}
 
-		found := &corev1.Service{}
-		err := r.client.Get(context.Background(), types.NamespacedName{Name: serviceToCreate.Name, Namespace: serviceToCreate.Namespace}, found)
-		if err != nil && errors.IsNotFound(err) {
-			err = r.client.Create(context.Background(), &serviceToCreate)
+			found := &corev1.Service{}
+			err := r.client.Get(context.Background(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
+			if err != nil && errors.IsNotFound(err) {
+				err = r.client.Create(context.Background(), service)
+				if err != nil {
+					createErrCh <- err
+				}
+				return
+
+			} else if err != nil {
+				createErrCh <- err
+				return
+			}
+
+			found.Spec.Ports = service.Spec.Ports
+			found.Spec.Selector = service.Spec.Selector
+
+			err = r.client.Update(context.Background(), found)
 			if err != nil {
 				createErrCh <- err
+				return
 			}
-			break
-
-		} else if err != nil {
-			createErrCh <- err
-			break
-		}
-
-		found.Spec.Ports = serviceToCreate.Spec.Ports
-		found.Spec.Selector = serviceToCreate.Spec.Selector
-
-		err = r.client.Update(context.Background(), found)
-		if err != nil {
-			createErrCh <- err
-			break
-		}
-
+		}(&serviceToCreate)
 	}
+	waitGroup.Wait()
 
 	select {
 	case err := <-createErrCh:
