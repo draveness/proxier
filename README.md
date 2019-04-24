@@ -11,7 +11,7 @@ Proxier is a better approach to expose applications in Kubernetes. It supports l
 + [ ] scales horizontally with pressure by default
 
 ```yaml
-apiVersion: maegus.com/v1
+apiVersion: maegus.com/v1beta1
 kind: Proxier
 metadata:
   name: example-proxier
