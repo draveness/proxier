@@ -19,12 +19,15 @@ test:
 	go test -count=1 ./pkg/...
 
 e2e:
-	./hack/docker_image_exists.sh || \
+	./hack/docker-image-exists.sh || \
 	(operator-sdk build $(OPERATOR_E2E_IMAGE_NAME) && docker push $(OPERATOR_E2E_IMAGE_NAME))
 	go test -v ./test/e2e/ --kubeconfig "$(HOME)/.kube/k8s-playground-kubeconfig.yaml" --operator-image $(OPERATOR_E2E_IMAGE_NAME)
 
 start:
 	operator-sdk up local --namespace=default
+
+release:
+	./hack/make-release.sh
 
 LISTER_TARGET := pkg/client/listers/maegus/v1beta1/proxier.go
 $(LISTER_TARGET): $(K8S_GEN_DEPS)
