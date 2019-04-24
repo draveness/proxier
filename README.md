@@ -1,5 +1,9 @@
 # Proxier
 
+[![LICENSE](https://img.shields.io/github/license/draveness/proxier.svg)](https://github.com/draveness/proxier/blob/master/LICENSE)
+[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
+
+
 Proxier is a better approach to expose applications in Kubernetes. It supports load balancing to a set of pods with weights and provides high-performance load balancing with nginx and HAProxy.
 
 + [x] supports canary deployment and load balancing by weight
