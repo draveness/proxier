@@ -176,11 +176,6 @@ func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 }
 
 func newServiceForProxier(instance *maegusv1.Proxier) (*corev1.Service, error) {
-	selector, err := newPodLabel(instance)
-	if err != nil {
-		return nil, err
-	}
-
 	proxierPorts := []corev1.ServicePort{}
 	for _, port := range instance.Spec.Ports {
 		proxierPorts = append(proxierPorts, corev1.ServicePort{
@@ -194,9 +189,10 @@ func newServiceForProxier(instance *maegusv1.Proxier) (*corev1.Service, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance.Name,
 			Namespace: instance.Namespace,
+			Labels:    NewServiceLabels(instance),
 		},
 		Spec: corev1.ServiceSpec{
-			Selector: selector,
+			Selector: NewPodLabels(instance),
 			Type:     corev1.ServiceTypeClusterIP,
 			Ports:    proxierPorts,
 		},

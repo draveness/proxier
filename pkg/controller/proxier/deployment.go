@@ -90,10 +90,7 @@ func (r *ReconcileProxier) syncDeployment(instance *maegusv1.Proxier) error {
 
 // NewDeployment returns a nginx pod with the same namespace as the instance
 func NewDeployment(instance *maegusv1.Proxier) (*appsv1.Deployment, error) {
-	labels, err := newPodLabel(instance)
-	if err != nil {
-		return nil, err
-	}
+	labels := NewPodLabels(instance)
 
 	replicas := int32(1)
 

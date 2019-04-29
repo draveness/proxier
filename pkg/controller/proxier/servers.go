@@ -16,10 +16,7 @@ import (
 
 func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 	var serviceList corev1.ServiceList
-	if err := r.client.List(context.Background(), client.MatchingLabels(map[string]string{
-		// TODO: use const for proxier name key in service
-		"maegus.com/proxier-name": instance.Name,
-	}), &serviceList); err != nil {
+	if err := r.client.List(context.Background(), client.MatchingLabels(NewServiceLabels(instance)), &serviceList); err != nil {
 		return err
 	}
 
@@ -113,9 +110,7 @@ func groupServers(instance *maegusv1.Proxier, services []corev1.Service) ([]core
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s-backend", instance.Name, backend.Name),
 				Namespace: instance.Namespace,
-				Labels: map[string]string{
-					"maegus.com/proxier-name": instance.Name,
-				},
+				Labels:    NewServiceLabels(instance),
 			},
 			Spec: corev1.ServiceSpec{
 				Selector: backendSelector,

@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
 	"github.com/draveness/proxier/pkg/controller/proxier"
 	"github.com/draveness/proxier/test/framework"
 	"github.com/stretchr/testify/suite"
@@ -27,7 +28,7 @@ func (suite *ProxierCreateSuite) TestProxierCreateBackends() {
 	suite.Nil(err, "create proxier error")
 
 	svcList, err := f.KubeClient.CoreV1().Services(namespace).List(metav1.ListOptions{
-		LabelSelector: "maegus.com/proxier-name=" + instance.Name,
+		LabelSelector: maegusv1.ProxierKeyLabel + "=" + instance.Name,
 	})
 
 	suite.Nil(err, "list service error")
@@ -98,7 +99,7 @@ func (suite *ProxierCreateSuite) TestUpdateProxierRemoveService() {
 	suite.Nil(err, "update proxier error")
 
 	svcList, err := f.KubeClient.CoreV1().Services(namespace).List(metav1.ListOptions{
-		LabelSelector: "maegus.com/proxier-name=" + instance.Name,
+		LabelSelector: maegusv1.ProxierKeyLabel + "=" + instance.Name,
 	})
 
 	suite.Nil(err, "list service error")
