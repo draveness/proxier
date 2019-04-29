@@ -71,8 +71,12 @@ spec:
           type: object
         status:
           properties:
-            phase:
-              type: string
+            currentBackends:
+              format: int32
+              type: integer
+            obsoleteBackends:
+              format: int32
+              type: integer
           type: object
   version: v1beta1
   versions:

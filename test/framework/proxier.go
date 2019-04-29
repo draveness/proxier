@@ -77,15 +77,13 @@ func (f *Framework) WaitForProxierReady(p *maegusv1.Proxier, timeout time.Durati
 	var pollErr error
 
 	err := wait.Poll(2*time.Second, timeout, func() (bool, error) {
-		proxier, pollErr := f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
+		_, pollErr := f.MaegusClientV1.Proxiers(p.Namespace).Get(p.Name, metav1.GetOptions{})
 
 		if pollErr != nil {
 			return false, nil
 		}
 
-		if proxier.Status.Phase != maegusv1.ProxierRunning {
-			return false, nil
-		}
+		// TODO: check the proxier expected backends with current backends
 
 		return true, nil
 	})

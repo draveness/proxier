@@ -120,10 +120,18 @@ func schema_pkg_apis_maegus_v1beta1_ProxierStatus(ref common.ReferenceCallback) 
 			SchemaProps: spec.SchemaProps{
 				Description: "ProxierStatus defines the observed state of Proxier",
 				Properties: map[string]spec.Schema{
-					"phase": {
+					"currentBackends": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
+							Description: "CurrentBackends stores the count of current active services, which are required by the current proxier spec.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"obsoleteBackends": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ObsoleteBackends stores the count of obsolete services, which should be removed in controller",
+							Type:        []string{"integer"},
+							Format:      "int32",
 						},
 					},
 				},

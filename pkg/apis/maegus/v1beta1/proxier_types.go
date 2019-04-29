@@ -58,28 +58,17 @@ type BackendSpec struct {
 	Selector map[string]string `json:"selector,omitempty"`
 }
 
-// ProxierPhase is a label for the condition of a proxier at the current time.
-type ProxierPhase string
-
-// These are the valid statuses of proxiers.
-const (
-	// ProxierPending means the proxier has been accepted by the system, but one or more of the containers
-	// has not been started. This includes time before being bound to a node, as well as time spent
-	// pulling images onto the host.
-	ProxierPending ProxierPhase = "Pending"
-	// ProxierRunning means the proxier has been bound to a node and all of the containers have been started.
-	// At least one container is still running or is in the process of being restarted.
-	ProxierRunning ProxierPhase = "Running"
-	// ProxierUnknown means that for some reason the state of the proxier could not be obtained, typically due
-	// to an error in communicating with the host of the proxier.
-	ProxierUnknown ProxierPhase = "Unknown"
-)
-
 // ProxierStatus defines the observed state of Proxier
 // +k8s:openapi-gen=true
 type ProxierStatus struct {
+	// CurrentBackends stores the count of current active services, which are required by the current
+	// proxier spec.
 	// +optional
-	Phase ProxierPhase `json:"phase,omitempty"`
+	CurrentBackends int32 `json:"currentBackends,omitempty"`
+
+	// ObsoleteBackends stores the count of obsolete services, which should be removed in controller
+	// +optional
+	ObsoleteBackends int32 `json:"obsoleteBackends,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -87,7 +76,6 @@ type ProxierStatus struct {
 // Proxier is the Schema for the proxiers API
 // +genclient
 // +k8s:openapi-gen=true
-// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase",description="phase of the proxier"
 // +kubebuilder:subresource:status
 type Proxier struct {
 	metav1.TypeMeta   `json:",inline"`

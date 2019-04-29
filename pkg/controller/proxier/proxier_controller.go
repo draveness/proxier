@@ -123,12 +123,6 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	instance.Status.Phase = maegusv1.ProxierRunning
-	err = r.client.Status().Update(context.Background(), instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-
 	return reconcile.Result{}, nil
 }
 
