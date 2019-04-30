@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// PathToOSFile opens a file and return the os.File pointer.
 func PathToOSFile(relativPath string) (*os.File, error) {
 	path, err := filepath.Abs(relativPath)
 	if err != nil {
