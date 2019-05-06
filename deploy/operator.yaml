@@ -15,7 +15,7 @@ spec:
       serviceAccountName: proxier
       containers:
         - name: proxier
-          image: draveness/proxier:v0.1.3
+          image: draveness/proxier:v0.2.0
           command:
           - proxier
           imagePullPolicy: Always
