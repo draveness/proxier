@@ -26,9 +26,6 @@ e2e:
 start:
 	operator-sdk up local --namespace=default
 
-release:
-	./hack/make-release.sh
-
 LISTER_TARGET := pkg/client/listers/maegus/v1beta1/proxier.go
 $(LISTER_TARGET): $(K8S_GEN_DEPS)
 	$(LISTER_GEN_BINARY) \
@@ -60,6 +57,12 @@ k8s-gen: \
   $(LISTER_TARGET) \
   $(INFORMER_TARGET)
 
+.PHONY: release
+release:
+	./hack/make-release.sh
+	operator-sdk build draveness/proxier:$(RELEASE)
+	docker push draveness/proxier:$(RELEASE)
+	git tag $(RELEASE)
 
 define _K8S_GEN_VAR_TARGET_
 $(shell echo $(1) | tr '[:lower:]' '[:upper:]' | tr '-' '_')_BINARY:=$(FIRST_GOPATH)/bin/$(1)
