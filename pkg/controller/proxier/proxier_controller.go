@@ -126,11 +126,6 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileProxier) updateProxierStatus(instance *maegusv1.Proxier, proxierStatus *maegusv1.ProxierStatus) error {
-	instance.Status = *proxierStatus
-	return r.client.Status().Update(context.Background(), instance)
-}
-
 func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 	// Define a new Pod object
 	service, err := newServiceForProxier(instance)

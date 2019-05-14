@@ -3,6 +3,7 @@ package proxier
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"sync"
 
 	maegusv1 "github.com/draveness/proxier/pkg/apis/maegus/v1beta1"
@@ -13,6 +14,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
+
+func (r *ReconcileProxier) syncProxierStatus(instance *maegusv1.Proxier) error {
+	// TODO: calculate status in syncProxierStatus
+	var newStatus maegusv1.ProxierStatus
+
+	if reflect.DeepEqual(instance.Status, newStatus) {
+		return nil
+	}
+
+	newProxier := instance
+	newProxier.Status = newStatus
+	return r.client.Status().Update(context.Background(), newProxier)
+}
 
 func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 	var serviceList corev1.ServiceList
