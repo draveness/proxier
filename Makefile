@@ -11,7 +11,7 @@ K8S_GEN_DEPS+=$(TYPES_V1BETA1_TARGET)
 K8S_GEN_DEPS+=$(foreach bin,$(K8S_GEN_BINARIES),$(FIRST_GOPATH)/bin/$(bin))
 K8S_GEN_DEPS+=$(OPENAPI_GEN_BINARY)
 
-OPERATOR_E2E_IMAGE_TAG:=$(shell git rev-parse --short HEAD)
+OPERATOR_E2E_IMAGE_TAG:=$(shell tar -cf - pkg | md5)
 OPERATOR_E2E_IMAGE_NAME:=draveness/proxier-e2e:$(OPERATOR_E2E_IMAGE_TAG)
 
 .PHONY: test
