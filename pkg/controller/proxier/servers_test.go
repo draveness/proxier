@@ -59,7 +59,7 @@ func TestGroupServers(t *testing.T) {
 		},
 	}
 
-	servicesToCreate, servicesToDelete := groupServers(instance, existingServices)
+	servicesToCreate, servicesToDelete, activeServices := groupServers(instance, existingServices)
 
 	assert.Equal(t, []corev1.Service{
 		{
@@ -128,4 +128,27 @@ func TestGroupServers(t *testing.T) {
 			},
 		},
 	}, servicesToCreate)
+	assert.Equal(t, []corev1.Service{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "group-server-v2-backend",
+				Namespace: "default",
+				Labels:    NewServiceLabels(instance),
+			},
+			Spec: corev1.ServiceSpec{
+				Selector: map[string]string{
+					"version": "v2",
+					"app":     "group-server",
+				},
+				Type: corev1.ServiceTypeClusterIP,
+				Ports: []corev1.ServicePort{
+					{
+						Name:     "http",
+						Protocol: corev1.Protocol(maegusv1.ProtocolTCP),
+						Port:     80,
+					},
+				},
+			},
+		},
+	}, activeServices)
 }

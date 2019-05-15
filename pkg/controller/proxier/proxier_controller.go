@@ -108,18 +108,19 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	err = r.syncServers(instance)
-	if err != nil {
+	if err := r.syncProxierStatus(instance); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	err = r.syncDeployment(instance)
-	if err != nil {
+	if err := r.syncServers(instance); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	err = r.syncService(instance)
-	if err != nil {
+	if err := r.syncDeployment(instance); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if err := r.syncService(instance); err != nil {
 		return reconcile.Result{}, err
 	}
 

@@ -16,8 +16,17 @@ import (
 )
 
 func (r *ReconcileProxier) syncProxierStatus(instance *maegusv1.Proxier) error {
-	// TODO: calculate status in syncProxierStatus
-	var newStatus maegusv1.ProxierStatus
+	var serviceList corev1.ServiceList
+	if err := r.client.List(context.Background(), client.MatchingLabels(NewServiceLabels(instance)), &serviceList); err != nil {
+		return err
+	}
+
+	_, obsoleteServices, activeServices := groupServers(instance, serviceList.Items)
+
+	newStatus := maegusv1.ProxierStatus{
+		ActiveBackends:   int32(len(activeServices)),
+		ObsoleteBackends: int32(len(obsoleteServices)),
+	}
 
 	if reflect.DeepEqual(instance.Status, newStatus) {
 		return nil
@@ -34,7 +43,7 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 		return err
 	}
 
-	servicesToCreate, servicesToDelete := groupServers(instance, serviceList.Items)
+	servicesToCreate, servicesToDelete, _ := groupServers(instance, serviceList.Items)
 
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(len(servicesToDelete))
@@ -95,10 +104,10 @@ func (r *ReconcileProxier) syncServers(instance *maegusv1.Proxier) error {
 	default:
 	}
 
-	return nil
+	return r.syncProxierStatus(instance)
 }
 
-func groupServers(instance *maegusv1.Proxier, services []corev1.Service) ([]corev1.Service, []corev1.Service) {
+func groupServers(instance *maegusv1.Proxier, services []corev1.Service) ([]corev1.Service, []corev1.Service, []corev1.Service) {
 	servicesToCreate := []corev1.Service{}
 
 	proxierPorts := []corev1.ServicePort{}
@@ -136,6 +145,7 @@ func groupServers(instance *maegusv1.Proxier, services []corev1.Service) ([]core
 		servicesToCreate = append(servicesToCreate, serviceToCreate)
 	}
 
+	activeServices := []corev1.Service{}
 	servicesToDelete := []corev1.Service{}
 
 	for i := range services {
@@ -146,6 +156,7 @@ func groupServers(instance *maegusv1.Proxier, services []corev1.Service) ([]core
 			serviceToCreate := servicesToCreate[j]
 			if serviceToCreate.Name == service.Name &&
 				serviceToCreate.Namespace == service.Namespace {
+				activeServices = append(activeServices, service)
 				found = true
 				break
 			}
@@ -156,5 +167,5 @@ func groupServers(instance *maegusv1.Proxier, services []corev1.Service) ([]core
 		}
 	}
 
-	return servicesToCreate, servicesToDelete
+	return servicesToCreate, servicesToDelete, activeServices
 }
