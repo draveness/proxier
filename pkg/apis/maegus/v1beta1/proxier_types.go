@@ -61,10 +61,10 @@ type BackendSpec struct {
 // ProxierStatus defines the observed state of Proxier
 // +k8s:openapi-gen=true
 type ProxierStatus struct {
-	// CurrentBackends stores the count of current active services, which are required by the current
+	// ActiveBackends stores the count of current active services, which are required by the current
 	// proxier spec.
 	// +optional
-	CurrentBackends int32 `json:"currentBackends,omitempty"`
+	ActiveBackends int32 `json:"activeBackends,omitempty"`
 
 	// ObsoleteBackends stores the count of obsolete services, which should be removed in controller
 	// +optional
