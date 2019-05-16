@@ -1,5 +1,6 @@
 ![proxier-banner](./images/proxier-banner.png)
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/draveness/proxier)](https://goreportcard.com/report/github.com/draveness/proxier)
 [![LICENSE](https://img.shields.io/github/license/draveness/proxier.svg)](https://github.com/draveness/proxier/blob/master/LICENSE)
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 
