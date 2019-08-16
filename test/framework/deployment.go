@@ -68,3 +68,20 @@ func WaitUntilDeploymentGone(kubeClient kubernetes.Interface, namespace, name st
 		return false, nil
 	})
 }
+
+// WaitForDeployment returns when deployment is created.
+func WaitForDeployment(kubeClient kubernetes.Interface, namespace, name string, timeout time.Duration) error {
+	return wait.Poll(time.Second, timeout, func() (bool, error) {
+		_, err := kubeClient.AppsV1beta2().Deployments(namespace).Get(name, metav1.GetOptions{})
+
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				return false, nil
+			}
+
+			return false, err
+		}
+
+		return true, nil
+	})
+}

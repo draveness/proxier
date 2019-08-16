@@ -124,7 +124,7 @@ func (r *ReconcileProxier) Reconcile(request reconcile.Request) (reconcile.Resul
 
 func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 	// Define a new Pod object
-	service, err := newServiceForProxier(instance)
+	service, err := NewServiceForProxier(instance)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,8 @@ func (r *ReconcileProxier) syncService(instance *maegusv1.Proxier) error {
 	return nil
 }
 
-func newServiceForProxier(instance *maegusv1.Proxier) (*corev1.Service, error) {
+// NewServiceForProxier returns a service for proxier.
+func NewServiceForProxier(instance *maegusv1.Proxier) (*corev1.Service, error) {
 	proxierPorts := []corev1.ServicePort{}
 	for _, port := range instance.Spec.Ports {
 		proxierPorts = append(proxierPorts, corev1.ServicePort{

@@ -46,10 +46,15 @@ func (suite *ProxierCreateSuite) TestProxierCreateNginxDeployment() {
 
 	instance := framework.MakeBasicProxier(namespace, "test", []string{"v1", "v2"}, []int32{100, 10})
 
-	_, err := f.CreateProxierAndWaitUntilReady(namespace, instance)
-	suite.Nil(err, "create proxier error")
+	if _, err := f.CreateProxier(namespace, instance); err != nil {
+		suite.Nil(err, "create proxier error")
+	}
 
 	deploymentName := proxier.NewDeploymentName(instance)
+	if err := framework.WaitForDeployment(f.KubeClient, namespace, deploymentName, timeout); err != nil {
+		suite.Nil(err, "wait for deployment error")
+	}
+
 	deployment, err := f.KubeClient.AppsV1().Deployments(namespace).Get(deploymentName, metav1.GetOptions{})
 
 	suite.Nil(err, "get deployment error")
