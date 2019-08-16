@@ -175,7 +175,6 @@ func NewServiceForProxier(instance *maegusv1.Proxier) (*corev1.Service, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance.Name,
 			Namespace: instance.Namespace,
-			Labels:    NewServiceLabels(instance),
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: NewPodLabels(instance),
