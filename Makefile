@@ -23,7 +23,7 @@ e2e:
 	(operator-sdk build $(OPERATOR_E2E_IMAGE_NAME) && docker push $(OPERATOR_E2E_IMAGE_NAME))
 	go test -v ./test/e2e/ --kubeconfig "$(HOME)/.kube/k8s-playground-kubeconfig.yaml" --operator-image $(OPERATOR_E2E_IMAGE_NAME)
 
-start:
+run:
 	operator-sdk up local --namespace=default
 
 LISTER_TARGET := pkg/client/listers/maegus/v1beta1/proxier.go

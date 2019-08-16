@@ -78,3 +78,4 @@ tags
 vendor/
 
 .DS_Store
+.envrc
