@@ -9,7 +9,7 @@
 Proxier is a better approach to expose applications in Kubernetes. It supports load balancing to a set of pods with weights and provides high-performance load balancing with nginx and HAProxy.
 
 + [x] supports canary deployment and load balancing by weight
-+ [x] builtin load balancing applications support, ex: nginx and HAProxy
++ [x] builtin load balancing applications support, e.g., nginx and HAProxy
 + [ ] scales horizontally with pressure by default
 
 ```yaml
