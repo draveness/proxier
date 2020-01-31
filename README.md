@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/draveness/proxier)](https://goreportcard.com/report/github.com/draveness/proxier)
 [![LICENSE](https://img.shields.io/github/license/draveness/proxier.svg)](https://github.com/draveness/proxier/blob/master/LICENSE)
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdraveness%2Fproxier.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdraveness%2Fproxier?ref=badge_shield)
 
 # Proxier
 
@@ -38,7 +39,6 @@ spec:
 ## Architecture overview
 
 ![proxier-architecture](./images/proxier-architecture.png)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdraveness%2Fproxier.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdraveness%2Fproxier?ref=badge_shield)
 
 ## Installation
 
@@ -51,6 +51,3 @@ kubectl apply -f https://raw.githubusercontent.com/draveness/proxier/master/depl
 ## License
 
 MIT License, see [LICENSE](./LICENSE)
-
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdraveness%2Fproxier.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdraveness%2Fproxier?ref=badge_large)
