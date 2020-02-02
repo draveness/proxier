@@ -5,7 +5,7 @@
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fdraveness%2Fproxier.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fdraveness%2Fproxier?ref=badge_shield)
 
-# Proxier
+# Proxier [Under Development]
 
 Proxier is a better approach to expose applications in Kubernetes. It supports load balancing to a set of pods with weights and provides high-performance load balancing with nginx and HAProxy.
 
